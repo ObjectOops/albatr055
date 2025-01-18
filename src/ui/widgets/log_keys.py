@@ -22,4 +22,4 @@ def show():
             )
         with dpg.child_window(tag="keystroke_log", height=200):
             dpg.add_text("Log", tag="log_entry")
-        dpg.add_button(label="Export Log")
+        dpg.add_button(label="Export Log", callback=logging.export_log)
