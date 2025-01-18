@@ -20,3 +20,13 @@ def set_mouse_listener(listener):
     # active_mouse_listener = listener
     # if active_mouse_listener != None:
     #     active_mouse_listener.start()
+
+active_hotkey_listener = None
+
+def set_hotkey_listener(listener):
+    global active_hotkey_listener
+    if active_hotkey_listener != None:
+        active_hotkey_listener.stop()
+    active_hotkey_listener = listener
+    if active_hotkey_listener != None:
+        active_hotkey_listener.start()

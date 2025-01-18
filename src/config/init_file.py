@@ -62,3 +62,10 @@ class Config:
         passphrase = config_parser[Keys.passphrase.NAME]
         self.passphrase_hash = passphrase.get(Keys.passphrase.HASH)
         self.passphrase_enabled = passphrase.get(Keys.passphrase.ENABLE)
+        
+        suspect_hotkeys = config_parser[Keys.suspect_hotkeys.NAME]
+        self.hotkey_blacklist = [
+            i[1:-1] for i in suspect_hotkeys[Keys.suspect_hotkeys.BLACKLIST][1:-1].split(", ")
+        ]
+        
+        self.logging_override = False

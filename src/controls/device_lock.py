@@ -3,10 +3,14 @@ from pynput import keyboard, mouse
 
 from config.init_file import Config, save
 from util import passphrase_hash
-from controls import logging
+from controls import logging, detection
 from util import inputs
 
 def challenge():
+    if not Config.instance.passphrase_enabled:
+        unlock_keyboard()
+        unlock_mouse()
+        return
     passphrase = dpg.get_value("passphrase_input")
     hash = passphrase_hash.hash(passphrase)
     if hash != Config.instance.passphrase_hash:
@@ -21,6 +25,9 @@ def challenge():
     unlock_mouse()
 
 def passphrase_prompt():
+    if dpg.does_item_exist("passphrase_prompt"):
+        return
+    
     with dpg.window(
         tag="passphrase_prompt",
         no_close=True,
@@ -29,18 +36,23 @@ def passphrase_prompt():
         height=150,
         pos=(0, 0)
     ):
-        dpg.add_text("« Enter Passphrase »")
-        dpg.add_input_text(
-            tag="passphrase_input",
-            password=True,
-            on_enter=True,
-            callback=challenge
-        )
-        dpg.add_button(label="Submit", callback=challenge)
+        if Config.instance.passphrase_enabled:
+            dpg.add_text("« Enter Passphrase »")
+            dpg.add_input_text(
+                tag="passphrase_input",
+                password=True,
+                on_enter=True,
+                callback=challenge
+            )
+            dpg.add_button(label="Submit", callback=challenge)
+        else:
+            dpg.add_button(label="Unlock", callback=challenge)
 
 def lock_keyboard():
     def on_press(key):
         logging.log_key_down(key)
+        if not Config.instance.passphrase_enabled:
+            return
         if key == keyboard.Key.backspace:
             dpg.set_value("passphrase_input", dpg.get_value("passphrase_input")[:-1])
         elif key == keyboard.Key.enter:
@@ -54,6 +66,8 @@ def lock_keyboard():
     def on_release(key):
         logging.log_key_up(key)
     
+    detection.stop_detection()
+    
     inputs.set_keyboard_listener(
         keyboard.Listener(
             on_press=on_press,
@@ -63,11 +77,15 @@ def lock_keyboard():
     )
     
     passphrase_prompt()
-    dpg.configure_item("passphrase_input", readonly=True)
+    if Config.instance.passphrase_enabled:
+        dpg.configure_item("passphrase_input", readonly=True)
 
 def unlock_keyboard():
     inputs.set_keyboard_listener(None)
     dpg.delete_item("passphrase_prompt")
+    
+    if Config.instance.detect_active:
+        detection.start_detection()
 
 def lock_mouse():
     passphrase_prompt()
@@ -96,6 +114,15 @@ def confirm():
                 parent="set_passphrase_prompt"
             )
         return
+    valid_characters = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./"
+    for character in passphrase_1:
+        if character not in valid_characters:
+            dpg.add_text(
+                f"Password characters must be a part of this character set:\n\"{valid_characters}\"",
+                tag="passphrase_notice",
+                parent="set_passphrase_prompt"
+            )
+            return
     Config.instance.passphrase_hash = passphrase_hash.hash(passphrase_1)
     Config.instance.passphrase_enabled = True
     save()

@@ -23,6 +23,9 @@ class Keys:
         NAME = "passphrase"
         HASH = "hash"
         ENABLE = "enable"
+    class suspect_hotkeys:
+        NAME = "suspect_hotkeys"
+        BLACKLIST = "blacklist"
 
 INIT_DEFAULTS = {
     Keys.viewport.NAME: {
@@ -45,5 +48,17 @@ INIT_DEFAULTS = {
     Keys.passphrase.NAME: {
         Keys.passphrase.HASH: "",
         Keys.passphrase.ENABLE: False
+    },
+    Keys.suspect_hotkeys.NAME: {
+        Keys.suspect_hotkeys.BLACKLIST: [
+            # Windows
+            "<cmd>+r", # Run Dialog
+            "<ctrl>+<shift>+<esc>", # Task Manager
+            "<cmd>+x", # System Tools
+            "<cmd>+e", # File Explorer
+            "<cmd>+i", # Settings
+            "<alt>+<f4>", # Close Window
+            "<ctrl>+<shift>+<enter>" # Launch as Admin
+        ]
     }
 }

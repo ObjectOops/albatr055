@@ -2,6 +2,7 @@ import dearpygui.dearpygui as dpg
 
 from ui import windows, theme
 from config import init_file
+from controls import detection
 
 def main():
     dpg.create_context()
@@ -10,6 +11,7 @@ def main():
     theme.set_global_theme()
     windows.create_viewport()
     windows.primary_window()
+    detection.start_detection_if_active()
 
     dpg.setup_dearpygui()
     dpg.show_viewport()

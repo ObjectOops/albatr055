@@ -10,14 +10,14 @@ keystrokes = []
 
 def log_key_down(key):
     global keystrokes
-    if Config.instance.log_keystrokes:
+    if Config.instance.log_keystrokes or Config.instance.logging_override:
         line = f"{key} down"
         keystrokes.append(line)
         log(line)
 
 def log_key_up(key):
     global keystrokes
-    if Config.instance.log_keystrokes:
+    if Config.instance.log_keystrokes or Config.instance.logging_override:
         line = f"{key} up"
         keystrokes.append(line)
         log(line)
