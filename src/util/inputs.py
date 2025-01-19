@@ -1,32 +1,56 @@
 from pynput import keyboard
 
-active_keyboard_listener = None
+from control import logging
+from config import config
 
-def set_keyboard_listener(listener):
-    global active_keyboard_listener
-    if active_keyboard_listener != None:
-        active_keyboard_listener.stop()
-    active_keyboard_listener = listener
-    if active_keyboard_listener != None:
-        active_keyboard_listener.start()
+kb_on_press_callback = None
+kb_on_release_callback = None
 
-active_mouse_listener = None
+def keyboard_on_press(key):
+    global kb_on_press_callback
+    logging.log_key_down(key)
+    if kb_on_press_callback is not None:
+        kb_on_press_callback(key)
 
-def set_mouse_listener(listener):
-    raise NotImplementedError()
-    # global active_mouse_listener
-    # if active_mouse_listener != None:
-    #     active_mouse_listener.stop()
-    # active_mouse_listener = listener
-    # if active_mouse_listener != None:
-    #     active_mouse_listener.start()
+def keyboard_on_release(key):
+    global kb_on_release_callback
+    logging.log_key_up(key)
+    if kb_on_release_callback is not None:
+        kb_on_release_callback(key)
 
-active_hotkey_listener = None
+def set_kb_on_press(callback):
+    global kb_on_press_callback
+    kb_on_press_callback = callback
 
-def set_hotkey_listener(listener):
-    global active_hotkey_listener
-    if active_hotkey_listener != None:
-        active_hotkey_listener.stop()
-    active_hotkey_listener = listener
-    if active_hotkey_listener != None:
-        active_hotkey_listener.start()
+def set_kb_on_release(callback):
+    global kb_on_release_callback
+    kb_on_release_callback = callback
+
+keyboard_listener = keyboard.Listener(
+    on_press=keyboard_on_press,
+    on_release=keyboard_on_release,
+    suppress=False
+)
+keyboard_listener.start()
+
+def set_kb_suppression(suppress):
+    global keyboard_listener
+    keyboard_listener._suppress = suppress # Purposefully ignore "private" member.
+
+hotkey_listener = None
+
+def enable_hotkey_listening(callback):
+    global hotkey_listener
+    hotkey_map = dict()
+    for hotkey in config.instance.hotkey_blacklist:
+        hotkey_map[hotkey] = lambda hotkey=hotkey: callback(f"Hotkey: {hotkey}")
+
+    disable_hotkey_listening()
+    hotkey_listener = keyboard.GlobalHotKeys(hotkey_map)
+    hotkey_listener.start()
+
+def disable_hotkey_listening():
+    global hotkey_listener
+    if hotkey_listener is not None:
+        hotkey_listener.stop()
+    hotkey_listener = None

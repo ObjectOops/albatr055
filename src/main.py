@@ -1,23 +1,23 @@
 import dearpygui.dearpygui as dpg
 
+from config import config
 from ui import windows, theme
-from config import init_file
-from controls import detection
+from control import detection
 
 def main():
     dpg.create_context()
     
-    init_file.load()
+    config.load()
     theme.set_global_theme()
     windows.create_viewport()
     windows.primary_window()
-    detection.start_detection_if_active()
+    detection.start_if_active()
 
     dpg.setup_dearpygui()
     dpg.show_viewport()
     dpg.start_dearpygui()
     
-    init_file.save()
+    config.save()
     
     dpg.destroy_context()
 

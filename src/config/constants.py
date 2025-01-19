@@ -14,7 +14,7 @@ class Keys:
         KEYS_PER_SECOND = "keys_per_second"
         SAMPLE_SIZE = "sample_size"
         LISTEN_HOTKEYS = "listen_hotkeys"
-        IGNORE_RECUR = "ignore_recur"
+        IGNORE_RECURRING = "ignore_recurring"
         LOG_ON_DETECTION = "log_on_detection"
     class logging:
         NAME = "logging"
@@ -36,10 +36,10 @@ INIT_DEFAULTS = {
     Keys.detection.NAME: {
         Keys.detection.ACTIVE: False,
         Keys.detection.LOCK_MOUSE_ON_DETECTION: True,
-        Keys.detection.KEYS_PER_SECOND: 3.0,
+        Keys.detection.KEYS_PER_SECOND: 15.0,
         Keys.detection.SAMPLE_SIZE: 6,
         Keys.detection.LISTEN_HOTKEYS: True,
-        Keys.detection.IGNORE_RECUR: False,
+        Keys.detection.IGNORE_RECURRING: True,
         Keys.detection.LOG_ON_DETECTION: True
     },
     Keys.logging.NAME: {
