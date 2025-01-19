@@ -1,5 +1,7 @@
 import dearpygui.dearpygui as dpg
 
+from util import resource
+
 def set_global_theme():
     with dpg.theme() as global_theme:
         with dpg.theme_component(dpg.mvAll):
@@ -21,5 +23,5 @@ def set_global_theme():
     dpg.bind_theme(global_theme)
     
     with dpg.font_registry():
-        default_font = dpg.add_font("res/cour.ttf", 15)
+        default_font = dpg.add_font(resource.get_resource("res/cour.ttf"), 15)
     dpg.bind_font(default_font)
