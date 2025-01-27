@@ -20,8 +20,8 @@ def set_passphrase_window():
         no_collapse=True,
         no_close=True,
         modal=True,
-        width=400,
-        height=150,
+        width=650,
+        height=300,
         pos=[25, 25]
     ):
         dpg.add_input_text(
@@ -61,8 +61,8 @@ def passphrase_prompt():
         tag="passphrase_prompt",
         no_close=True,
         no_move=True,
-        width=400,
-        height=160,
+        width=620,
+        height=207,
         pos=(0, 0)
     ):
         dpg.add_text("Input Locked")
@@ -74,9 +74,17 @@ def passphrase_prompt():
                 on_enter=True,
                 callback=device_lock.passphrase_challenge
             )
-            dpg.add_button(label="Submit", callback=device_lock.passphrase_challenge)
+            dpg.add_button(
+                label="Submit",
+                tag="unlock_button",
+                callback=device_lock.passphrase_challenge
+            )
         else:
-            dpg.add_button(label="Unlock", callback=device_lock.passphrase_challenge)
+            dpg.add_button(
+                label="Unlock",
+                tag="unlock_button",
+                callback=device_lock.passphrase_challenge
+            )
 
 def incorrect_passphrase_notice():
     if not dpg.does_item_exist("challenge_notice"):

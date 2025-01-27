@@ -1,5 +1,6 @@
 APP_TITLE = "ALBATR055"
 INIT_FILE_PATH = "albatr055.ini"
+VALID_PASSPHRASE_CHARACTERS = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./"
 
 class Keys:
     class viewport:
@@ -29,8 +30,8 @@ class Keys:
 
 INIT_DEFAULTS = {
     Keys.viewport.NAME: {
-        Keys.viewport.WIDTH: 500,
-        Keys.viewport.HEIGHT: 250,
+        Keys.viewport.WIDTH: 1000,
+        Keys.viewport.HEIGHT: 500,
         Keys.viewport.POS: [630, 220]
     },
     Keys.detection.NAME: {

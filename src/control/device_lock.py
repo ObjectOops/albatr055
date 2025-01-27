@@ -2,10 +2,14 @@ import dearpygui.dearpygui as dpg
 from pynput import keyboard, mouse
 
 from control import logging, detection
-from config import config
-from util import passphrase_hash
+from config import config, constants
+from util import passphrase_hash, inputs
 from ui.widgets import manual_lock
-from util import inputs
+
+import time, threading, ctypes
+
+PROCESS_PER_MONITOR_DPI_AWARE = 2
+ctypes.windll.shcore.SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE)
 
 def lock_keyboard():
     inputs.set_kb_suppression(True)
@@ -22,7 +26,8 @@ def lock_keyboard():
             passphrase_challenge()
         else:
             try:
-                dpg.set_value("passphrase_input", dpg.get_value("passphrase_input") + key.char)
+                if key.char is not None and key.char in constants.VALID_PASSPHRASE_CHARACTERS:
+                    dpg.set_value("passphrase_input", dpg.get_value("passphrase_input") + key.char)
             except AttributeError:
                 pass
     
@@ -54,6 +59,7 @@ def unlock_keyboard():
     controller.release(keyboard.Key.cmd)
 
 def lock_mouse():
+    logging.log_generic("Locked Mouse")
     # TODO: Implement when pynput library developer publishes a fix.
     
     manual_lock.passphrase_prompt()
@@ -61,8 +67,24 @@ def lock_mouse():
     dpg.configure_item("primary_window", show=False)
     dpg.set_primary_window("passphrase_prompt", value=True)
     dpg.configure_viewport(0, always_on_top=True, decorated=False)
+    
+    original_pos = dpg.get_viewport_pos()
+    original_width = dpg.get_viewport_width()
+    original_height = dpg.get_viewport_height()
+    dpg.maximize_viewport()
+    
+    if dpg.does_item_exist("passphrase_input"):
+        dpg.focus_item("passphrase_input")
+    
+    global temp_stop_thread, temp_thread
+    temp_stop_thread = False
+    temp_thread = threading.Thread(
+        target=temp_mouse_thread, args=(original_pos, original_width, original_height)
+    )
+    temp_thread.start()
 
 def unlock_mouse():
+    logging.log_generic("Unlocked Mouse")
     # TODO: Implement when pynput library developer publishes a fix.
     
     manual_lock.close_passphrase_prompt()
@@ -70,6 +92,40 @@ def unlock_mouse():
     dpg.configure_item("primary_window", show=True)
     dpg.set_primary_window("primary_window", value=True)
     dpg.configure_viewport(0, always_on_top=False, decorated=True)
+    
+    global temp_stop_thread, temp_thread
+    temp_stop_thread = True
+    if temp_thread is not None:
+        temp_thread.join()
+
+temp_stop_thread = False
+temp_thread = None
+# Only reads, so probably fine if not thread-safe.
+def temp_mouse_thread(original_pos, original_width, original_height):
+    while True:
+        time.sleep(0)
+        if not dpg.does_item_exist("unlock_button"):
+            continue
+        offset = dpg.get_item_pos("unlock_button")
+        rect = dpg.get_item_rect_size("unlock_button")
+        if offset != [0, 0] and rect != [0, 0]:
+            break
+    m = mouse.Controller()
+    pos = dpg.get_viewport_pos()
+    pos[0] += offset[0] + rect[0] / 2
+    pos[1] += offset[1] + rect[1] / 2
+    
+    dpg.configure_viewport(
+        0, 
+        x_pos=original_pos[0], 
+        y_pos=original_pos[1], 
+        width=original_width, 
+        height=original_height
+    )
+        
+    while not temp_stop_thread:
+        m.position = pos
+        time.sleep(0.1)
 
 def set_passphrase():
     passphrase_1 = dpg.get_value("passphrase_input_1")
@@ -85,11 +141,12 @@ def set_passphrase():
         manual_lock.invalid_passphrase_window("Passphrases do not match.")
         return
 
-    valid_characters = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./"
     for character in passphrase_1:
-        if character not in valid_characters:
+        if character not in constants.VALID_PASSPHRASE_CHARACTERS:
             manual_lock.invalid_passphrase_window(
-                f"Password characters must be a part of this character set:\n\"{valid_characters}\""
+f"""Password characters must be a
+part of this character set:
+\"{constants.VALID_PASSPHRASE_CHARACTERS}\""""
             )
             return
 
@@ -108,8 +165,9 @@ def passphrase_challenge():
     hash = passphrase_hash.hash(passphrase)
     if hash != config.instance.passphrase_hash:
         manual_lock.incorrect_passphrase_notice()
+        dpg.set_value("passphrase_input", "")
+        dpg.focus_item("passphrase_input")
         return
     
     unlock_keyboard()
     unlock_mouse()
-

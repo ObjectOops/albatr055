@@ -7,7 +7,7 @@ from control import logging
 keystroke_log = []
 
 def toggle_logging():
-    config.instance.log_keystrokes = True
+    config.instance.log_keystrokes = not config.instance.log_keystrokes
     config.save()
 
 def log_key_down(key):

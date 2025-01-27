@@ -35,7 +35,7 @@ def export_dialog():
         label="Select Folder",
         directory_selector=True,
         modal=True,
-        width=400,
-        height=200,
+        width=800,
+        height=400,
         callback=logging.export_log
     )
