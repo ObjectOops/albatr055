@@ -1,6 +1,9 @@
+import platform
+
 APP_TITLE = "ALBATR055"
 INIT_FILE_PATH = "albatr055.ini"
 VALID_PASSPHRASE_CHARACTERS = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./"
+PLATFORM_NAME = platform.system()
 
 class Keys:
     class viewport:

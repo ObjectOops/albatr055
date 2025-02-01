@@ -1,6 +1,6 @@
 import dearpygui.dearpygui as dpg
 
-from config import config
+from config import config, constants
 from control import logging
 
 def widget():
@@ -30,12 +30,19 @@ def log(line):
     dpg.remove_alias("log_entry")
     dpg.add_text(line, tag="log_entry", parent="keystroke_log", tracked=dpg.get_value("autoscroll"))
 
-def export_dialog():    
-    dpg.add_file_dialog(
+def export_dialog():
+    with dpg.file_dialog(
         label="Select Folder",
         directory_selector=True,
         modal=True,
         width=800,
         height=400,
         callback=logging.export_log
-    )
+    ):
+        # Opening shortcuts on Windows in the file dialog 
+        # causes the app to crash without exceptions.
+        file_dialog_msg = "A log file will be automatically exported to the selected folder."
+        if constants.PLATFORM_NAME == "Windows":
+            file_dialog_msg += "\nDo not open shortcuts that may appear (i.e. \"My Documents\")."
+        with dpg.child_window() as child:
+            dpg.add_text(file_dialog_msg, wrap=dpg.get_item_width(child))
