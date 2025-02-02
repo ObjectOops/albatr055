@@ -6,10 +6,7 @@ from config import config, constants
 from util import passphrase_hash, inputs
 from ui.widgets import manual_lock
 
-import time, threading, ctypes
-
-PROCESS_PER_MONITOR_DPI_AWARE = 2
-ctypes.windll.shcore.SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE)
+import time, threading
 
 def lock_keyboard():
     inputs.set_kb_suppression(True)
