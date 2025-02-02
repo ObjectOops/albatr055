@@ -33,7 +33,9 @@ def save():
     }
     config_writer[Keys.passphrase.NAME] = {
         Keys.passphrase.HASH: instance.passphrase_hash,
-        Keys.passphrase.ENABLE: instance.passphrase_enabled
+        Keys.passphrase.ENABLE: instance.passphrase_enabled,
+        Keys.passphrase.AUTO_UNLOCK_DURATION: instance.auto_unlock_duration,
+        Keys.passphrase.AUTO_UNLOCK_ENABLE: instance.auto_unlock_enabled
     }
     with open(INIT_FILE_PATH, "w") as config_file:
         config_writer.write(config_file)
@@ -62,6 +64,8 @@ class Config:
         passphrase = config_parser[Keys.passphrase.NAME]
         self.passphrase_hash = passphrase.get(Keys.passphrase.HASH)
         self.passphrase_enabled = passphrase.getboolean(Keys.passphrase.ENABLE)
+        self.auto_unlock_duration = passphrase.getint(Keys.passphrase.AUTO_UNLOCK_DURATION)
+        self.auto_unlock_enabled = passphrase.getboolean(Keys.passphrase.AUTO_UNLOCK_ENABLE)
         
         suspect_hotkeys = config_parser[Keys.suspect_hotkeys.NAME]
         self.hotkey_blacklist = [

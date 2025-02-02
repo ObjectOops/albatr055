@@ -27,6 +27,8 @@ class Keys:
         NAME = "passphrase"
         HASH = "hash"
         ENABLE = "enable"
+        AUTO_UNLOCK_DURATION = "auto_unlock_duration"
+        AUTO_UNLOCK_ENABLE = "auto_unlock_enable"
     class suspect_hotkeys:
         NAME = "suspect_hotkeys"
         BLACKLIST = "blacklist"
@@ -51,7 +53,9 @@ INIT_DEFAULTS = {
     },
     Keys.passphrase.NAME: {
         Keys.passphrase.HASH: "",
-        Keys.passphrase.ENABLE: False
+        Keys.passphrase.ENABLE: False,
+        Keys.passphrase.AUTO_UNLOCK_DURATION: 60 * 10,
+        Keys.passphrase.AUTO_UNLOCK_ENABLE: False
     },
     Keys.suspect_hotkeys.NAME: {
         Keys.suspect_hotkeys.BLACKLIST: [

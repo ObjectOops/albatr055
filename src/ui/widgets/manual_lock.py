@@ -1,14 +1,29 @@
 import dearpygui.dearpygui as dpg
 
-from control import device_lock
+from util import duration
+from control import device_lock, detection
 from config import config
 
 def widget():
     dpg.add_text("« MANUAL LOCK »")
-    with dpg.group(horizontal=True):
-        dpg.add_button(label="Lock Keyboard", callback=device_lock.lock_keyboard)
-        dpg.add_button(label="Lock Mouse", callback=device_lock.lock_mouse)
-        dpg.add_button(label="Set Unlock Passphrase", callback=set_passphrase_window)
+    with dpg.group():
+        with dpg.group(horizontal=True):
+            dpg.add_button(label="Lock Keyboard", callback=device_lock.lock_keyboard)
+            dpg.add_button(label="Lock Mouse", callback=device_lock.lock_mouse)
+        with dpg.collapsing_header(label="More"):
+            dpg.add_button(label="Set Unlock Passphrase", callback=set_passphrase_window)
+            with dpg.group(horizontal=True):
+                dpg.add_text("Auto Unlock Duration (HH/MM/SS): ")
+                dpg.add_time_picker(
+                    default_value=duration.to_hms(config.instance.auto_unlock_duration),
+                    hour24=True,
+                    callback=detection.change_auto_unlock_duration
+                )
+            dpg.add_checkbox(
+                label="Enable Auto Unlock Timer",
+                default_value=config.instance.auto_unlock_enabled,
+                callback=detection.toggle_auto_unlock_enabled
+            )
 
 def set_passphrase_window():
     if dpg.does_item_exist("set_passphrase_prompt"):

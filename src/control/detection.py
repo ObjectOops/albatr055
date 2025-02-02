@@ -2,7 +2,7 @@ import time
 
 from config import config
 from control import logging, device_lock
-from util import inputs
+from util import inputs, duration
 
 def toggle_detection(_, toggle):
     config.instance.detection_active = toggle
@@ -75,3 +75,11 @@ def badusb_detected(note):
     if config.instance.log_on_detection:
         config.instance.log_keystrokes_override = True
         logging.log_badusb(note)
+
+def change_auto_unlock_duration(_, value):
+    config.instance.auto_unlock_duration = duration.from_hms(value)
+    config.save()
+
+def toggle_auto_unlock_enabled(_, toggle):
+    config.instance.auto_unlock_enabled = toggle
+    config.save()
