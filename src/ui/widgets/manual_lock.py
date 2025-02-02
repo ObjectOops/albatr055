@@ -77,7 +77,7 @@ def passphrase_prompt():
         no_close=True,
         no_move=True,
         width=620,
-        height=207,
+        height=237,
         pos=(0, 0)
     ):
         dpg.add_text("Input Locked")
@@ -100,6 +100,15 @@ def passphrase_prompt():
                 tag="unlock_button",
                 callback=device_lock.passphrase_challenge
             )
+        
+        if config.instance.auto_unlock_enabled:
+            with dpg.group(horizontal=True):
+                dpg.add_text("Auto unlock in: ")
+                dpg.add_time_picker(
+                    tag="auto_unlock_timer_widget",
+                    hour24=True,
+                    default_value=duration.to_hms(config.instance.auto_unlock_duration)
+                )
 
 def incorrect_passphrase_notice():
     if not dpg.does_item_exist("challenge_notice"):

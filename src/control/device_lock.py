@@ -1,12 +1,47 @@
+import threading, time
+
 import dearpygui.dearpygui as dpg
 from pynput import keyboard, mouse
 
 from control import logging, detection
 from config import config, constants
-from util import passphrase_hash, inputs
+from util import passphrase_hash, inputs, duration
 from ui.widgets import manual_lock
 
-import time, threading
+auto_unlock_timer_on = False
+auto_unlock_timer_thread = None
+
+def start_auto_unlock_timer():
+    global auto_unlock_timer_on, auto_unlock_timer_thread
+
+    if config.instance.auto_unlock_enabled:
+        auto_unlock_timer_on = True
+        auto_unlock_timer_thread = threading.Thread(target=auto_unlock_timer)
+        auto_unlock_timer_thread.start()
+
+def stop_auto_unlock_timer():
+    global auto_unlock_timer_on, auto_unlock_timer_thread
+
+    if config.instance.auto_unlock_enabled:
+        auto_unlock_timer_on = False
+
+def auto_unlock_timer():
+    global auto_unlock_timer_on
+    
+    duration_remaining = config.instance.auto_unlock_duration
+    while auto_unlock_timer_on:
+        dpg.set_value("auto_unlock_timer_widget", duration.to_hms(duration_remaining))
+        duration_remaining -= 1
+        time.sleep(1)
+        if duration_remaining <= 0:
+            unlock_all()
+            break
+
+def unlock_all():
+    stop_auto_unlock_timer()
+    
+    unlock_keyboard()
+    unlock_mouse()
 
 def lock_keyboard():
     inputs.set_kb_suppression(True)
@@ -33,6 +68,7 @@ def lock_keyboard():
     inputs.disable_hotkey_listening()
     
     manual_lock.passphrase_prompt()
+    start_auto_unlock_timer()
     
     if config.instance.passphrase_enabled:
         dpg.configure_item("passphrase_input", readonly=True)
@@ -60,6 +96,7 @@ def lock_mouse():
     # TODO: Implement when pynput library developer publishes a fix.
     
     manual_lock.passphrase_prompt()
+    start_auto_unlock_timer()
     
     dpg.configure_item("primary_window", show=False)
     dpg.set_primary_window("passphrase_prompt", value=True)
@@ -154,8 +191,7 @@ part of this character set:
 
 def passphrase_challenge():
     if not config.instance.passphrase_enabled:
-        unlock_keyboard()
-        unlock_mouse()
+        unlock_all()
         return
     
     passphrase = dpg.get_value("passphrase_input")
@@ -166,5 +202,4 @@ def passphrase_challenge():
         dpg.focus_item("passphrase_input")
         return
     
-    unlock_keyboard()
-    unlock_mouse()
+    unlock_all()
