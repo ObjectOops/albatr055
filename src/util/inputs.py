@@ -1,4 +1,4 @@
-from pynput import keyboard
+from pynput import keyboard, mouse
 
 from control import logging
 from config import config
@@ -54,3 +54,19 @@ def disable_hotkey_listening():
     if hotkey_listener is not None:
         hotkey_listener.stop()
     hotkey_listener = None
+
+mouse_on_move_callback = None
+
+def set_mouse_on_move(callback):
+    global mouse_on_move_callback
+    mouse_on_move_callback = callback
+
+def mouse_on_move(x, y):
+    global mouse_on_move_callback
+    if mouse_on_move_callback is not None:
+        mouse_on_move_callback(x, y)
+
+mouse_listener = mouse.Listener(
+    on_move=mouse_on_move
+)
+mouse_listener.start()
