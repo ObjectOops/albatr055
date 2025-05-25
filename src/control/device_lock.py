@@ -1,4 +1,4 @@
-import threading, time
+import threading, time, math
 
 import dearpygui.dearpygui as dpg
 from pynput import keyboard, mouse
@@ -93,7 +93,6 @@ def unlock_keyboard():
 
 def lock_mouse():
     logging.log_generic("Locked Mouse")
-    # TODO: Implement when pynput library developer publishes a fix.
     
     manual_lock.passphrase_prompt()
     start_auto_unlock_timer()
@@ -110,16 +109,15 @@ def lock_mouse():
     if dpg.does_item_exist("passphrase_input"):
         dpg.focus_item("passphrase_input")
     
-    global temp_stop_thread, temp_thread
-    temp_stop_thread = False
-    temp_thread = threading.Thread(
-        target=temp_mouse_thread, args=(original_pos, original_width, original_height)
+    global stop_mouse_lock_thread_flag, mouse_lock_thread
+    stop_mouse_lock_thread_flag = False
+    mouse_lock_thread = threading.Thread(
+        target=mouse_lock_target, args=(original_pos, original_width, original_height)
     )
-    temp_thread.start()
+    mouse_lock_thread.start()
 
 def unlock_mouse():
     logging.log_generic("Unlocked Mouse")
-    # TODO: Implement when pynput library developer publishes a fix.
     
     manual_lock.close_passphrase_prompt()
     
@@ -127,15 +125,18 @@ def unlock_mouse():
     dpg.set_primary_window("primary_window", value=True)
     dpg.configure_viewport(0, always_on_top=False, decorated=True)
     
-    global temp_stop_thread, temp_thread
-    temp_stop_thread = True
-    if temp_thread is not None:
-        temp_thread.join()
+    global stop_mouse_lock_thread_flag, mouse_lock_thread
+    stop_mouse_lock_thread_flag = True
+    if mouse_lock_thread is not None:
+        mouse_lock_thread.join()
 
-temp_stop_thread = False
-temp_thread = None
+stop_mouse_lock_thread_flag = False
+mouse_lock_thread = None
 # Only reads, so probably fine if not thread-safe.
-def temp_mouse_thread(original_pos, original_width, original_height):
+def mouse_lock_target(original_pos, original_width, original_height):
+    global stop_mouse_lock_thread_flag
+    
+    # Calculate the position of the unlock button.
     while True:
         time.sleep(0)
         if not dpg.does_item_exist("unlock_button"):
@@ -148,6 +149,8 @@ def temp_mouse_thread(original_pos, original_width, original_height):
     pos = dpg.get_viewport_pos()
     pos[0] += offset[0] + rect[0] / 2
     pos[1] += offset[1] + rect[1] / 2
+    pos[0] = math.floor(pos[0])
+    pos[1] = math.floor(pos[1])
     
     dpg.configure_viewport(
         0, 
@@ -156,10 +159,12 @@ def temp_mouse_thread(original_pos, original_width, original_height):
         width=original_width, 
         height=original_height
     )
-        
-    while not temp_stop_thread:
+    
+    while not stop_mouse_lock_thread_flag:
+        if m.position[0] == pos[0] and m.position[1] == pos[1]:
+            time.sleep(0)
+            continue
         m.position = pos
-        time.sleep(0.1)
 
 def set_passphrase():
     passphrase_1 = dpg.get_value("passphrase_input_1")
