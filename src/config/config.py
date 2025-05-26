@@ -2,17 +2,23 @@ import configparser
 
 import dearpygui.dearpygui as dpg
 
-from config.constants import INIT_FILE_PATH, INIT_DEFAULTS, Keys
+from config.constants import INIT_DEFAULTS, Keys
+from util import cli
 
 def load():
     global instance
     config_parser = configparser.ConfigParser()
     config_parser.read_dict(INIT_DEFAULTS)
-    config_parser.read(INIT_FILE_PATH)
+    config_parser.read(cli.args.config_file)
     instance = Config(config_parser)
 
 def save():
     global instance
+    
+    if cli.ephemeral_mode:
+        # If in ephemeral mode, do not save to the config file.
+        return
+    
     config_writer = instance.config_parser
     config_writer[Keys.viewport.NAME] = {
         Keys.viewport.WIDTH: dpg.get_viewport_width(),
@@ -37,7 +43,7 @@ def save():
         Keys.passphrase.AUTO_UNLOCK_DURATION: instance.auto_unlock_duration,
         Keys.passphrase.AUTO_UNLOCK_ENABLE: instance.auto_unlock_enabled
     }
-    with open(INIT_FILE_PATH, "w") as config_file:
+    with open(cli.args.config_file, "w") as config_file:
         config_writer.write(config_file)
 
 class Config:

@@ -2,11 +2,13 @@ import ctypes
 
 import dearpygui.dearpygui as dpg
 
+from util import cli
 from config import config, constants
 from ui import windows, theme
 from control import detection
 
 def main():
+    cli.init_cli()
     configure_platform()
     
     dpg.create_context()
