@@ -12,9 +12,11 @@ Capabilities:
 
 import argparse
 
-from config import constants
+import dearpygui.dearpygui as dpg
+
+from config import constants, config
 from control import device_lock
-from util import passphrase_utils
+from util import passphrase_utils, duration
 
 args = None
 ephemeral_mode = None
@@ -30,7 +32,7 @@ def init_cli():
     parser.add_argument("config_file", nargs="?", default=constants.INIT_FILE_PATH, type=str, help="Path to configuration file. Default: `./albatr055.ini`")
     parser.add_argument("-l", "--lock", choices=["keyboard", "mouse", "all"], help="Immediately lock input from devices.")
     parser.add_argument("-p", "--passphrase", type=str, help="Unlock passphrase.")
-    parser.add_argument("-d", "--unlock-duration", type=int, help="Unlock duration in seconds.")
+    parser.add_argument("-d", "--auto-unlock-duration", type=int, help="Auto unlock duration in seconds.")
     parser.add_argument("-m", "--lock-mouse-on-detection", action="store_true", default=None, help="Lock mouse on detection.")
     parser.add_argument("-b", "--background", action="store_true", help="Launch in background. Conflicts with: `--lock`")
     parser.add_argument("-k", "--kps-threshold", type=float, help="Keys per second threshold for detection.")
@@ -45,7 +47,7 @@ def init_cli():
     
     ephemeral_mode = bool(
         args.passphrase 
-        or args.unlock_duration 
+        or args.auto_unlock_duration 
         or args.lock_mouse_on_detection 
         or args.kps_threshold 
         or args.sample_size 
@@ -59,6 +61,7 @@ def init_cli():
 def immediate_actions():
     immediate_lock()
     set_passphrase()
+    set_unlock_duration()
 
 def immediate_lock():
     if args.lock == "keyboard":
@@ -80,3 +83,12 @@ Passphrase characters must be a part of this character set:
         exit(1)
     
     passphrase_utils.set_passphrase(args.passphrase)
+
+def set_unlock_duration():
+    auto_unlock_duration = args.auto_unlock_duration or config.instance.auto_unlock_duration
+    if auto_unlock_duration < 0:
+        print("-d: Invalid Auto Unlock Duration\nAuto unlock duration must be a positive integer.")
+        exit(1)
+    
+    config.instance.auto_unlock_duration = auto_unlock_duration
+    dpg.set_value("auto_unlock_duration_widget", duration.to_hms(auto_unlock_duration))
