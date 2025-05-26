@@ -1,5 +1,10 @@
 import platform
 
+from util import resource
+
+SMALL_ICON = resource.get_resource("res/icon_256.ico")
+FONT = resource.get_resource("res/cour.ttf")
+
 APP_TITLE = "ALBATR055"
 INIT_FILE_PATH = "albatr055.ini"
 VALID_PASSPHRASE_CHARACTERS = "`1234567890-=qwertyuiop[]\\asdfghjkl;'zxcvbnm,./"

@@ -5,6 +5,7 @@ from ui.widgets import manual_lock, detect_params, key_log
 
 def create_viewport():
     dpg.create_viewport(
+        small_icon=constants.SMALL_ICON,
         title=constants.APP_TITLE,
         width=config.instance.viewport_width,
         height=config.instance.viewport_height,
