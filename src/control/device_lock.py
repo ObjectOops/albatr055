@@ -5,7 +5,7 @@ from pynput import keyboard, mouse
 
 from control import logging, detection
 from config import config, constants
-from util import passphrase_hash, inputs, duration
+from util import inputs, duration, passphrase_utils
 from ui.widgets import manual_lock
 
 auto_unlock_timer_on = False
@@ -180,17 +180,15 @@ def set_passphrase():
         manual_lock.invalid_passphrase_window("Passphrases do not match.")
         return
 
-    for character in passphrase_1:
-        if character not in constants.VALID_PASSPHRASE_CHARACTERS:
-            manual_lock.invalid_passphrase_window(
-f"""Password characters must be a
+    if not passphrase_utils.is_valid_passphrase(passphrase_1):
+        manual_lock.invalid_passphrase_window(
+f"""Passphrase characters must be a
 part of this character set:
 \"{constants.VALID_PASSPHRASE_CHARACTERS}\""""
-            )
-            return
-
-    config.instance.passphrase_hash = passphrase_hash.hash(passphrase_1)
-    config.instance.passphrase_enabled = True
+        )
+        return
+    
+    passphrase_utils.set_passphrase(passphrase_1)
     config.save()
     manual_lock.close_set_passphrase_window()
 
@@ -200,7 +198,7 @@ def passphrase_challenge():
         return
     
     passphrase = dpg.get_value("passphrase_input")
-    hash = passphrase_hash.hash(passphrase)
+    hash = passphrase_utils.hash_scrypt(passphrase)
     if hash != config.instance.passphrase_hash:
         manual_lock.incorrect_passphrase_notice()
         dpg.set_value("passphrase_input", "")

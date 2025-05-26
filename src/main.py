@@ -5,10 +5,11 @@ import dearpygui.dearpygui as dpg
 from util import cli
 from config import config, constants
 from ui import windows, theme
-from control import detection, device_lock
+from control import detection
 
 def main():
     cli.init_cli()
+    
     configure_platform()
     
     dpg.create_context()
@@ -22,7 +23,7 @@ def main():
     dpg.setup_dearpygui()
     dpg.show_viewport()
     
-    immediate_actions()
+    cli.immediate_actions()
     
     dpg.start_dearpygui()
     
@@ -34,15 +35,6 @@ def configure_platform():
     if constants.PLATFORM_NAME == "Windows":
         PROCESS_PER_MONITOR_DPI_AWARE = 2
         ctypes.windll.shcore.SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE)
-
-def immediate_actions():
-    if cli.args.lock == "keyboard":
-        device_lock.lock_keyboard()
-    elif cli.args.lock == "mouse":
-        device_lock.lock_mouse()
-    elif cli.args.lock == "all":
-        device_lock.lock_keyboard()
-        device_lock.lock_mouse()
 
 if __name__ == "__main__":
     main()

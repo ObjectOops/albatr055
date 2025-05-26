@@ -13,6 +13,8 @@ Capabilities:
 import argparse
 
 from config import constants
+from control import device_lock
+from util import passphrase_utils
 
 args = None
 ephemeral_mode = None
@@ -53,3 +55,28 @@ def init_cli():
         or args.log_on_detection 
         or args.log_keystrokes
     )
+
+def immediate_actions():
+    immediate_lock()
+    set_passphrase()
+
+def immediate_lock():
+    if args.lock == "keyboard":
+        device_lock.lock_keyboard()
+    elif args.lock == "mouse":
+        device_lock.lock_mouse()
+    elif args.lock == "all":
+        device_lock.lock_keyboard()
+        device_lock.lock_mouse()
+
+def set_passphrase():
+    if args.passphrase is None:
+        return
+    if not passphrase_utils.is_valid_passphrase(args.passphrase):
+        print(
+f"""-p: Invalid Passphrase
+Passphrase characters must be a part of this character set:
+\"{constants.VALID_PASSPHRASE_CHARACTERS}\"""")
+        exit(1)
+    
+    passphrase_utils.set_passphrase(args.passphrase)
