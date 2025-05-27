@@ -42,6 +42,7 @@ def init_cli():
     parser.add_argument("-i", "--ignore-recurring", action="store_true", default=None, help="Ignore recurring keystrokes in detection.")
     parser.add_argument("-t", "--log-on-detection", action="store_true", default=None, help="Log detection events.")
     parser.add_argument("--log-keystrokes", action="store_true", default=None, help="Immediately begin logging all keystrokes.")
+    parser.add_argument("-v", "--version", action="version", version=f"%(prog)s {constants.VERSION}", help="Show version information.")
 
     args = parser.parse_args()
     
