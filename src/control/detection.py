@@ -1,7 +1,7 @@
 import time, threading
 
 from config import config
-from control import logging, device_lock
+from control import logging, device_lock, detection
 from util import inputs, duration
 from gui import gui
 
@@ -80,12 +80,12 @@ def badusb_detected(note, event=None):
     
     if config.instance.is_daemon:
         inputs.set_kb_suppression(True) # GUI takes time to load, so suppress input immediately.
-        def callback():
-            if event is not None:
-                event.set()
+        def immediate_action():
+            action()
+            gui.add_exit_background(event)
         gui_thread = threading.Thread(
             target=gui.start, 
-            args=(action, callback), 
+            args=(immediate_action, lambda: detection.start_detection(event)), 
             daemon=True
         )
         gui_thread.start()

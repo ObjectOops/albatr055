@@ -28,6 +28,20 @@ def start(immediate_actions=lambda: None, post_actions=lambda: None):
     
     post_actions()
 
+def exit_background(event):
+    dpg.stop_dearpygui()
+    dpg.destroy_context()
+    event.set()
+
+def add_exit_background(event):
+    if event is None:
+        # `event` should not be `None`, but this behavior is defined just in case.
+        return
+    dpg.add_separator(parent="primary_window")
+    dpg.add_button(
+        label="Exit Background", parent="primary_window", callback=lambda: exit_background(event)
+    )
+
 def configure_platform():
     if constants.PLATFORM_NAME == "Windows":
         PROCESS_PER_MONITOR_DPI_AWARE = 2
