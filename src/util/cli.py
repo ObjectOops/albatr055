@@ -75,6 +75,7 @@ def set_cli_values():
     set_hotkeys()
     set_ignore_recurring()
     set_log_on_detection()
+    set_log_keystrokes()
 
 def immediate_actions():
     immediate_lock()
@@ -163,3 +164,6 @@ def set_ignore_recurring():
 
 def set_log_on_detection():
     config.instance.log_on_detection = args.log_on_detection or config.instance.log_on_detection
+
+def set_log_keystrokes():
+    config.instance.log_keystrokes = args.log_keystrokes or config.instance.log_keystrokes

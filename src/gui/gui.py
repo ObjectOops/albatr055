@@ -6,7 +6,11 @@ from config import config, constants
 from gui import windows, theme
 from util import cli
 
+alive = False
+
 def start(immediate_actions=lambda: None, post_actions=lambda: None):
+    global alive
+    
     configure_platform()
     dpg.create_context()
     
@@ -22,7 +26,9 @@ def start(immediate_actions=lambda: None, post_actions=lambda: None):
     cli.immediate_actions()
     immediate_actions()
     
+    alive = True
     dpg.start_dearpygui() # Main event loop.
+    alive = False
     
     config.save() # Requires GUI size and position; must be called here.
     

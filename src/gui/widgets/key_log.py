@@ -2,6 +2,7 @@ import dearpygui.dearpygui as dpg
 
 from config import config, constants
 from control import logging
+from gui import gui
 
 def widget():
     dpg.add_text("« LOGGING »")
@@ -26,6 +27,11 @@ def toggle_auto_scroll(_, checkbox):
     dpg.configure_item("log_entry", tracked=checkbox)
 
 def log(line):
+    if not gui.alive:
+        # Only show the log in the GUI when the GUI is up.
+        # Effect: Do not show the log in the GUI when running as a daemon.
+        return
+    
     dpg.configure_item("log_entry", tracked=False)
     dpg.remove_alias("log_entry")
     dpg.add_text(line, tag="log_entry", parent="keystroke_log", tracked=dpg.get_value("autoscroll"))
