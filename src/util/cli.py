@@ -30,7 +30,8 @@ def init_cli():
 
     parser.add_argument("config_file", nargs="?", default=constants.INIT_FILE_PATH, type=str, help="Path to configuration file. Default: `./albatr055.ini`")
     parser.add_argument("-l", "--lock", choices=["keyboard", "mouse", "all"], help="Immediately lock input from devices.")
-    parser.add_argument("-p", "--passphrase", type=str, help="Unlock passphrase.")
+    parser.add_argument("-p", "--passphrase", type=str, help="Unlock passphrase. Use 'none' to disable.")
+    parser.add_argument("-u", "--auto-unlock-enabled", action="store_true", default=None, help="Enable auto unlock timer.")
     parser.add_argument("-d", "--auto-unlock-duration", type=int, help="Auto unlock duration in seconds.")
     parser.add_argument("-m", "--lock-mouse-on-detection", action="store_true", default=None, help="Lock mouse on detection.")
     parser.add_argument("-a", "--active", action="store_true", help="Launch with active detection. This state may be saved to the configuration file.")
@@ -47,22 +48,24 @@ def init_cli():
 
     args = parser.parse_args()
     
-    ephemeral_mode = bool(
-        args.passphrase 
-        or args.auto_unlock_duration 
-        or args.lock_mouse_on_detection 
-        or args.kps_threshold 
-        or args.sample_size 
-        or args.listen_hotkeys 
-        or args.hotkeys 
-        or args.ignore_recurring 
-        or args.log_on_detection 
-        or args.log_keystrokes
-    )
+    ephemeral_mode = any(arg is not None for arg in [
+        args.passphrase, 
+        args.auto_unlock_enabled, 
+        args.auto_unlock_duration, 
+        args.lock_mouse_on_detection, 
+        args.kps_threshold, 
+        args.sample_size, 
+        args.listen_hotkeys, 
+        args.hotkeys, 
+        args.ignore_recurring, 
+        args.log_on_detection, 
+        args.log_keystrokes
+    ])
 
 def set_cli_values():
     set_passphrase()
-    set_unlock_duration()
+    set_auto_unlock_enabled()
+    set_auto_unlock_duration()
     set_lock_mouse_on_detection()
     set_active()
     test_background_lock_conflict()
@@ -89,6 +92,9 @@ def immediate_lock():
 def set_passphrase():
     if args.passphrase is None:
         return
+    if args.passphrase.lower() == "none":
+        config.instance.passphrase_enabled = False
+        return
     if not passphrase_utils.is_valid_passphrase(args.passphrase):
         print(
 f"""-p: Invalid Passphrase
@@ -98,7 +104,12 @@ Passphrase characters must be a part of this character set:
     
     passphrase_utils.set_passphrase(args.passphrase)
 
-def set_unlock_duration():
+def set_auto_unlock_enabled():
+    config.instance.auto_unlock_enabled = (
+        args.auto_unlock_enabled or config.instance.auto_unlock_enabled
+    )
+
+def set_auto_unlock_duration():
     config.instance.auto_unlock_duration = option_override_value(
         args.auto_unlock_duration, config.instance.auto_unlock_duration
     )
