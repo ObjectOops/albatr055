@@ -38,7 +38,7 @@ def init_cli():
     parser.add_argument("-k", "--kps-threshold", type=float, help="Keys per second threshold for detection.")
     parser.add_argument("-s", "--sample-size", type=int, help="Sample size for detection.")
     parser.add_argument("--listen-hotkeys", action="store_true", default=None, help="Enable listening for suspicious hotkeys.")
-    parser.add_argument("--hotkeys", nargs="*", type=str, help="List of suspicious hotkeys to listen for. Example: '<ctrl>+<shift>+<esc>'")
+    parser.add_argument("--hotkeys", nargs="+", type=str, help="List of suspicious hotkeys to listen for. Appends to default hotkeys if the first argument is \"*\". Example: --hotkeys * '<ctrl>+<shift>+<esc>'")
     parser.add_argument("-i", "--ignore-recurring", action="store_true", default=None, help="Ignore recurring keystrokes in detection.")
     parser.add_argument("-t", "--log-on-detection", action="store_true", default=None, help="Log detection events.")
     parser.add_argument("--log-keystrokes", action="store_true", default=None, help="Immediately begin logging all keystrokes.")
@@ -68,6 +68,8 @@ def set_cli_values():
     test_background_lock_conflict()
     set_kps_threshold()
     set_sample_size()
+    set_listen_hotkeys()
+    set_hotkeys()
 
 def immediate_actions():
     immediate_lock()
@@ -130,3 +132,15 @@ def set_sample_size():
     if config.instance.sample_size < 2:
         print("-s: Invalid Sample Size\nSample size must be greater than or equal to 2.")
         exit(1)
+
+def set_listen_hotkeys():
+    config.instance.listen_hotkeys = args.listen_hotkeys or config.instance.listen_hotkeys
+
+def set_hotkeys():
+    if args.hotkeys is None:
+        return
+    
+    if args.hotkeys[0] == "*":
+        config.instance.hotkey_blacklist.extend(args.hotkeys[1:])
+    else:
+        config.instance.hotkey_blacklist = args.hotkeys
