@@ -12,11 +12,9 @@ Capabilities:
 
 import argparse
 
-import dearpygui.dearpygui as dpg
-
 from config import constants, config
 from control import device_lock
-from util import passphrase_utils, duration
+from util import passphrase_utils
 
 args = None
 ephemeral_mode = None
@@ -58,10 +56,12 @@ def init_cli():
         or args.log_keystrokes
     )
 
-def immediate_actions():
-    immediate_lock()
+def set_immediate():
     set_passphrase()
     set_unlock_duration()
+
+def immediate_actions():
+    immediate_lock()
 
 def immediate_lock():
     if args.lock == "keyboard":
@@ -91,4 +91,3 @@ def set_unlock_duration():
         exit(1)
     
     config.instance.auto_unlock_duration = auto_unlock_duration
-    dpg.set_value("auto_unlock_duration_widget", duration.to_hms(auto_unlock_duration))

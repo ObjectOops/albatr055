@@ -15,7 +15,6 @@ def widget():
             with dpg.group(horizontal=True):
                 dpg.add_text("Auto Unlock Duration (HH/MM/SS): ")
                 dpg.add_time_picker(
-                    tag="auto_unlock_duration_widget",
                     default_value=duration.to_hms(config.instance.auto_unlock_duration),
                     hour24=True,
                     callback=detection.change_auto_unlock_duration

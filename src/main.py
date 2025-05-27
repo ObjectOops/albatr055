@@ -15,6 +15,8 @@ def main():
     dpg.create_context()
     
     config.load()
+    cli.set_immediate()
+    
     theme.set_global_theme()
     windows.create_viewport()
     windows.primary_window()
