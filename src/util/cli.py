@@ -73,6 +73,8 @@ def set_cli_values():
     set_sample_size()
     set_listen_hotkeys()
     set_hotkeys()
+    set_ignore_recurring()
+    set_log_on_detection()
 
 def immediate_actions():
     immediate_lock()
@@ -155,3 +157,9 @@ def set_hotkeys():
         config.instance.hotkey_blacklist.extend(args.hotkeys[1:])
     else:
         config.instance.hotkey_blacklist = args.hotkeys
+
+def set_ignore_recurring():
+    config.instance.ignore_recurring = args.ignore_recurring or config.instance.ignore_recurring
+
+def set_log_on_detection():
+    config.instance.log_on_detection = args.log_on_detection or config.instance.log_on_detection
