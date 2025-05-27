@@ -59,7 +59,8 @@ def lock_keyboard():
         else:
             try:
                 if key.char is not None and key.char in constants.VALID_PASSPHRASE_CHARACTERS:
-                    dpg.set_value("passphrase_input", dpg.get_value("passphrase_input") + key.char)
+                    val = dpg.get_value("passphrase_input")
+                    dpg.set_value("passphrase_input", (val or "") + key.char)
             except AttributeError:
                 pass
     
