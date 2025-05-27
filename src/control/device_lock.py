@@ -9,22 +9,21 @@ from util import inputs, duration, passphrase_utils
 from gui.widgets import manual_lock
 
 auto_unlock_timer_on = False
-auto_unlock_timer_thread = None
 
-def start_auto_unlock_timer():
-    global auto_unlock_timer_on, auto_unlock_timer_thread
+def start_auto_unlock_timer_if_enabled():
+    global auto_unlock_timer_on
 
     if config.instance.auto_unlock_enabled:
         auto_unlock_timer_on = True
-        auto_unlock_timer_thread = threading.Thread(target=auto_unlock_timer)
+        auto_unlock_timer_thread = threading.Thread(target=auto_unlock_timer, daemon=True)
         auto_unlock_timer_thread.start()
 
 def stop_auto_unlock_timer():
-    global auto_unlock_timer_on, auto_unlock_timer_thread
+    global auto_unlock_timer_on
 
-    if config.instance.auto_unlock_enabled:
-        auto_unlock_timer_on = False
+    auto_unlock_timer_on = False
 
+# Only reads, so probably fine if not thread-safe.
 def auto_unlock_timer():
     global auto_unlock_timer_on
     
@@ -69,7 +68,7 @@ def lock_keyboard():
     inputs.disable_hotkey_listening()
     
     manual_lock.passphrase_prompt()
-    start_auto_unlock_timer()
+    start_auto_unlock_timer_if_enabled()
     
     if config.instance.passphrase_enabled:
         dpg.configure_item("passphrase_input", readonly=True)
@@ -93,10 +92,12 @@ def unlock_keyboard():
     controller.release(keyboard.Key.cmd)
 
 def lock_mouse():
+    global mouse_lock_active
+    
     logging.log_generic("Locked Mouse")
     
     manual_lock.passphrase_prompt()
-    start_auto_unlock_timer()
+    start_auto_unlock_timer_if_enabled()
     
     dpg.configure_item("primary_window", show=False)
     dpg.set_primary_window("passphrase_prompt", value=True)
@@ -110,14 +111,15 @@ def lock_mouse():
     if dpg.does_item_exist("passphrase_input"):
         dpg.focus_item("passphrase_input")
     
-    global stop_mouse_lock_thread_flag, mouse_lock_thread
-    stop_mouse_lock_thread_flag = False
+    mouse_lock_active = True
     mouse_lock_thread = threading.Thread(
-        target=mouse_lock_target, args=(original_pos, original_width, original_height)
+        target=mouse_lock_target, args=(original_pos, original_width, original_height), daemon=True
     )
     mouse_lock_thread.start()
 
 def unlock_mouse():
+    global mouse_lock_active
+    
     logging.log_generic("Unlocked Mouse")
     
     manual_lock.close_passphrase_prompt()
@@ -126,16 +128,13 @@ def unlock_mouse():
     dpg.set_primary_window("primary_window", value=True)
     dpg.configure_viewport(0, always_on_top=False, decorated=True)
     
-    global stop_mouse_lock_thread_flag, mouse_lock_thread
-    stop_mouse_lock_thread_flag = True
-    if mouse_lock_thread is not None:
-        mouse_lock_thread.join()
+    mouse_lock_active = False
 
-stop_mouse_lock_thread_flag = False
-mouse_lock_thread = None
+mouse_lock_active = False
+
 # Only reads, so probably fine if not thread-safe.
 def mouse_lock_target(original_pos, original_width, original_height):
-    global stop_mouse_lock_thread_flag
+    global mouse_lock_active
     
     # Calculate the position of the unlock button.
     while True:
@@ -146,7 +145,7 @@ def mouse_lock_target(original_pos, original_width, original_height):
         rect = dpg.get_item_rect_size("unlock_button")
         if offset != [0, 0] and rect != [0, 0]:
             break
-    m = mouse.Controller()
+    
     pos = dpg.get_viewport_pos()
     pos[0] += offset[0] + rect[0] / 2
     pos[1] += offset[1] + rect[1] / 2
@@ -161,7 +160,8 @@ def mouse_lock_target(original_pos, original_width, original_height):
         height=original_height
     )
     
-    while not stop_mouse_lock_thread_flag:
+    m = mouse.Controller()
+    while mouse_lock_active:
         if m.position[0] == pos[0] and m.position[1] == pos[1]:
             time.sleep(0)
             continue
