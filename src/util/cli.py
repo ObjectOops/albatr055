@@ -43,6 +43,7 @@ def init_cli():
     parser.add_argument("-t", "--log-on-detection", action="store_true", default=None, help="Log detection events.")
     parser.add_argument("--log-keystrokes", action="store_true", default=None, help="Immediately begin logging all keystrokes.")
     parser.add_argument("-v", "--version", action="version", version=f"%(prog)s {constants.VERSION}", help="Show version information.")
+    parser.add_argument("--relaunched", action="store_true", help="Not intended for general CLI use. Indicates that the process has been relaunched in the background. Can be used for debugging purposes.")
 
     args = parser.parse_args()
     

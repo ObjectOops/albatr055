@@ -49,7 +49,7 @@ def save():
 class Config:
     def __init__(self, config_parser):
         self.config_parser = config_parser
-        self.is_daemon = cli.args.background
+        self.is_daemon = cli.args.background and cli.args.relaunched
         
         viewport = config_parser[Keys.viewport.NAME]
         self.viewport_width = viewport.getint(Keys.viewport.WIDTH)

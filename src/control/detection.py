@@ -79,13 +79,17 @@ def badusb_detected(note, event=None):
             logging.log_badusb(note)
     
     if config.instance.is_daemon:
+        config.instance.is_daemon = False # No longer a daemon once GUI starts.
         inputs.set_kb_suppression(True) # GUI takes time to load, so suppress input immediately.
         def immediate_action():
             action()
             gui.add_exit_background(event)
+        def post_action():
+            detection.start_detection(event)
+            config.instance.is_daemon = True # Returns to being a daemon when GUI is closed.
         gui_thread = threading.Thread(
             target=gui.start, 
-            args=(immediate_action, lambda: detection.start_detection(event)), 
+            args=(immediate_action, post_action), 
             daemon=True
         )
         gui_thread.start()

@@ -2,7 +2,7 @@ import ctypes
 
 import dearpygui.dearpygui as dpg
 
-from config import constants
+from config import config, constants
 from gui import windows, theme
 from util import cli
 
@@ -23,6 +23,8 @@ def start(immediate_actions=lambda: None, post_actions=lambda: None):
     immediate_actions()
     
     dpg.start_dearpygui() # Main event loop.
+    
+    config.save() # Requires GUI size and position; must be called here.
     
     dpg.destroy_context()
     
