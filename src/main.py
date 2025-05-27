@@ -1,42 +1,24 @@
-import ctypes
-
-import dearpygui.dearpygui as dpg
+import threading
 
 from util import cli
-from config import config, constants
-from ui import windows, theme
+from config import config
 from control import detection
+from gui import gui
 
 def main():
     cli.init_cli()
-    
-    configure_platform()
-    
-    dpg.create_context()
-    
     config.load()
-    cli.set_immediate()
+    cli.set_cli_values()
     
-    theme.set_global_theme()
-    windows.create_viewport()
-    windows.primary_window()
-    detection.start_if_active()
-
-    dpg.setup_dearpygui()
-    dpg.show_viewport()
-    
-    cli.immediate_actions()
-    
-    dpg.start_dearpygui()
+    if config.instance.is_daemon:
+        gui_exit_event = threading.Event()
+        detection.start_detection(gui_exit_event) # Will spawn GUI in separate thread on detection.
+        gui_exit_event.wait() # Wait indefinitely until the GUI exits.
+    else:
+        detection.start_if_active()
+        gui.start()
     
     config.save()
-    
-    dpg.destroy_context()
-
-def configure_platform():
-    if constants.PLATFORM_NAME == "Windows":
-        PROCESS_PER_MONITOR_DPI_AWARE = 2
-        ctypes.windll.shcore.SetProcessDpiAwareness(PROCESS_PER_MONITOR_DPI_AWARE)
 
 if __name__ == "__main__":
     main()

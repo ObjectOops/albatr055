@@ -1,8 +1,9 @@
-import time
+import time, threading
 
 from config import config
 from control import logging, device_lock
 from util import inputs, duration
+from gui import gui
 
 def toggle_detection(_, toggle):
     config.instance.detection_active = toggle
@@ -36,7 +37,7 @@ def toggle_log_on_detection(_, toggle):
     config.instance.log_on_detection = toggle
     config.save()
 
-def start_detection():
+def start_detection(event=None):
     keystroke_watch = []
     
     def on_press(key):
@@ -49,14 +50,14 @@ def start_detection():
             keystroke_watch.pop(0)
             delta = keystroke_watch[-1][1] - keystroke_watch[0][1]
             if delta == 0:
-                badusb_detected(f"KPS: div. zero error")
+                badusb_detected(f"KPS: div. zero error", event)
                 return
             kps = config.instance.sample_size / delta * (10 ** 9)
             if kps >= config.instance.kps_threshold:
-                badusb_detected(f"KPS: {kps}")
+                badusb_detected(f"KPS: {kps}", event)
     
     if config.instance.listen_hotkeys:
-        inputs.enable_hotkey_listening(badusb_detected)
+        inputs.enable_hotkey_listening(lambda note: badusb_detected(note, event))
     
     inputs.set_kb_on_press(on_press)
 
@@ -68,13 +69,28 @@ def stop_detection():
     inputs.set_kb_on_press(None)
     inputs.disable_hotkey_listening()
 
-def badusb_detected(note):
-    device_lock.lock_keyboard()
-    if config.instance.lock_mouse_on_detection:
-        device_lock.lock_mouse()
-    if config.instance.log_on_detection:
-        config.instance.log_keystrokes_override = True
-        logging.log_badusb(note)
+def badusb_detected(note, event=None):
+    def action():
+        device_lock.lock_keyboard()
+        if config.instance.lock_mouse_on_detection:
+            device_lock.lock_mouse()
+        if config.instance.log_on_detection:
+            config.instance.log_keystrokes_override = True
+            logging.log_badusb(note)
+    
+    if config.instance.is_daemon:
+        inputs.set_kb_suppression(True) # GUI takes time to load, so suppress input immediately.
+        def callback():
+            if event is not None:
+                event.set()
+        gui_thread = threading.Thread(
+            target=gui.start, 
+            args=(action, callback), 
+            daemon=True
+        )
+        gui_thread.start()
+    else:
+        action()
 
 def change_auto_unlock_duration(_, value):
     config.instance.auto_unlock_duration = duration.from_hms(value)

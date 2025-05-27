@@ -6,7 +6,7 @@ from pynput import keyboard, mouse
 from control import logging, detection
 from config import config, constants
 from util import inputs, duration, passphrase_utils
-from ui.widgets import manual_lock
+from gui.widgets import manual_lock
 
 auto_unlock_timer_on = False
 auto_unlock_timer_thread = None

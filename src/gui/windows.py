@@ -1,7 +1,7 @@
 import dearpygui.dearpygui as dpg
 
 from config import constants, config
-from ui.widgets import manual_lock, detect_params, key_log
+from gui.widgets import manual_lock, detect_params, key_log
 
 def create_viewport():
     dpg.create_viewport(

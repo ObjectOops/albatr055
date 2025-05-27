@@ -1,7 +1,7 @@
 import time, pathlib
 
 from config import config, constants
-from ui.widgets import key_log
+from gui.widgets import key_log
 from control import logging
 
 keystroke_log = []

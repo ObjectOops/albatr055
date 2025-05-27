@@ -34,7 +34,7 @@ def init_cli():
     parser.add_argument("-d", "--auto-unlock-duration", type=int, help="Auto unlock duration in seconds.")
     parser.add_argument("-m", "--lock-mouse-on-detection", action="store_true", default=None, help="Lock mouse on detection.")
     parser.add_argument("-a", "--active", action="store_true", help="Launch with active detection. This state may be saved to the configuration file.")
-    parser.add_argument("-b", "--background", action="store_true", help="Launch in background. Detection will be active regardless of configuration; state may be saved to the configuration file. Conflicts with: `--lock`")
+    parser.add_argument("-b", "--background", action="store_true", help="Launch as background process. Detection will be active regardless of configuration. Conflicts with: `--lock`")
     parser.add_argument("-k", "--kps-threshold", type=float, help="Keys per second threshold for detection.")
     parser.add_argument("-s", "--sample-size", type=int, help="Sample size for detection.")
     parser.add_argument("--listen-hotkeys", action="store_true", default=None, help="Enable listening for suspicious hotkeys.")
@@ -58,11 +58,12 @@ def init_cli():
         or args.log_keystrokes
     )
 
-def set_immediate():
+def set_cli_values():
     set_passphrase()
     set_unlock_duration()
     set_lock_mouse_on_detection()
     set_active()
+    test_background_lock_conflict()
 
 def immediate_actions():
     immediate_lock()
@@ -101,3 +102,8 @@ def set_lock_mouse_on_detection():
 
 def set_active():
     config.instance.detection_active = args.active or config.instance.detection_active
+
+def test_background_lock_conflict():
+    if args.background and args.lock:
+        print("-b: Option Conflict\n`--background` is incompatible with `--lock`.")
+        exit(1)
