@@ -5,7 +5,8 @@ Capabilities:
 - Set an unlock passphrase for this specific session.
 - Set a unlock duration for this specific session.
 - Lock mouse on detection for this specific session.
-- Launch session in background.
+- Launch in active mode.
+- Launch session in background (enables active mode).
 - Set all other detection options for this specific session.
 - Set log keystrokes for this specific session.
 """
@@ -23,7 +24,7 @@ def init_cli():
     global args, ephemeral_mode
     
     parser = argparse.ArgumentParser(
-        description="Lock device input from all keyboards and/or mice with a GUI. An anti-(BadUSB / Rubber Ducky) tool. Note: Setting values via the CLI will disable changes to the configuration file.",
+        description="Lock device input from all keyboards and/or mice with a GUI. An anti-(BadUSB / Rubber Ducky) tool. Note: All options (except -l, -a, and -b) will disable making changes to the configuration file from the GUI.",
         epilog="MIT License, Copyright (c) 2025 Alex Yao"
     )
 
@@ -32,7 +33,8 @@ def init_cli():
     parser.add_argument("-p", "--passphrase", type=str, help="Unlock passphrase.")
     parser.add_argument("-d", "--auto-unlock-duration", type=int, help="Auto unlock duration in seconds.")
     parser.add_argument("-m", "--lock-mouse-on-detection", action="store_true", default=None, help="Lock mouse on detection.")
-    parser.add_argument("-b", "--background", action="store_true", help="Launch in background. Conflicts with: `--lock`")
+    parser.add_argument("-a", "--active", action="store_true", help="Launch with active detection. This state may be saved to the configuration file.")
+    parser.add_argument("-b", "--background", action="store_true", help="Launch in background. Detection will be active regardless of configuration; state may be saved to the configuration file. Conflicts with: `--lock`")
     parser.add_argument("-k", "--kps-threshold", type=float, help="Keys per second threshold for detection.")
     parser.add_argument("-s", "--sample-size", type=int, help="Sample size for detection.")
     parser.add_argument("--listen-hotkeys", action="store_true", default=None, help="Enable listening for suspicious hotkeys.")
@@ -59,6 +61,8 @@ def init_cli():
 def set_immediate():
     set_passphrase()
     set_unlock_duration()
+    set_lock_mouse_on_detection()
+    set_active()
 
 def immediate_actions():
     immediate_lock()
@@ -91,3 +95,9 @@ def set_unlock_duration():
         exit(1)
     
     config.instance.auto_unlock_duration = auto_unlock_duration
+
+def set_lock_mouse_on_detection():
+    config.instance.lock_mouse_on_detection = args.lock_mouse_on_detection or config.instance.lock_mouse_on_detection
+
+def set_active():
+    config.instance.detection_active = args.active or config.instance.detection_active
