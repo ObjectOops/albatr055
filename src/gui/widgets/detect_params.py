@@ -21,7 +21,7 @@ def widget():
             dpg.add_input_float(
                 label="Keys per second",
                 default_value=config.instance.kps_threshold,
-                min_value=1.0,
+                min_value=0.1,
                 min_clamped=True,
                 callback=detection.change_kps
             )

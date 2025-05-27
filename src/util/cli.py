@@ -66,9 +66,14 @@ def set_cli_values():
     set_lock_mouse_on_detection()
     set_active()
     test_background_lock_conflict()
+    set_kps_threshold()
+    set_sample_size()
 
 def immediate_actions():
     immediate_lock()
+
+def option_override_value(option_value, config_value):
+    return option_value if option_value is not None else config_value
 
 def immediate_lock():
     if args.lock == "keyboard":
@@ -92,12 +97,12 @@ Passphrase characters must be a part of this character set:
     passphrase_utils.set_passphrase(args.passphrase)
 
 def set_unlock_duration():
-    auto_unlock_duration = args.auto_unlock_duration or config.instance.auto_unlock_duration
-    if auto_unlock_duration < 0:
-        print("-d: Invalid Auto Unlock Duration\nAuto unlock duration must be a positive integer.")
+    config.instance.auto_unlock_duration = option_override_value(
+        args.auto_unlock_duration, config.instance.auto_unlock_duration
+    )
+    if config.instance.auto_unlock_duration < 0:
+        print("-d: Invalid Auto Unlock Duration\nAuto unlock duration cannot be negative.")
         exit(1)
-    
-    config.instance.auto_unlock_duration = auto_unlock_duration
 
 def set_lock_mouse_on_detection():
     config.instance.lock_mouse_on_detection = args.lock_mouse_on_detection or config.instance.lock_mouse_on_detection
@@ -108,4 +113,20 @@ def set_active():
 def test_background_lock_conflict():
     if args.background and args.lock:
         print("-b: Option Conflict\n`--background` is incompatible with `--lock`.")
+        exit(1)
+
+def set_kps_threshold():
+    config.instance.kps_threshold = option_override_value(
+        args.kps_threshold, config.instance.kps_threshold
+    )
+    if config.instance.kps_threshold <= 0:
+        print("-k: Invalid KPS Threshold\nKPS threshold must be a positive number.")
+        exit(1)
+
+def set_sample_size():
+    config.instance.sample_size = option_override_value(
+        args.sample_size, config.instance.sample_size
+    )
+    if config.instance.sample_size < 2:
+        print("-s: Invalid Sample Size\nSample size must be greater than or equal to 2.")
         exit(1)
