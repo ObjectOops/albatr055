@@ -59,7 +59,7 @@ jobs:
           python-version: "${{ env.PYTHON_VERSION }}"
       - name: Install Build Deps
         run: pip install pyinstaller pillow
-      - name: Build Executable
+      - name: Build Executables
         run: |
           ${{ matrix.pyinstaller_onefile_cmd }}
           ${{ matrix.pyinstaller_onedir_cmd }}
@@ -102,7 +102,8 @@ jobs:
       - name: Archive Artifacts
         run: |
           for dir in dists/*/; do
-            zip -r "${dir%/}.zip" "$dir"
+            echo "Archiving: " $dir*
+            zip -r "${dir%/}.zip" $dir*
           done
       - name: Release Artifacts
         uses: softprops/action-gh-release@v2
@@ -110,5 +111,4 @@ jobs:
         with:
           generate_release_notes: true
           draft: true
-          preserve_order: true
           files: dists/*.zip
