@@ -1,0 +1,83 @@
+name: Create Release
+
+on:
+  push:
+    branches:
+      - workflow-release
+    tags:
+      - 'v*'
+
+jobs:
+  command:
+    name: Command
+    runs-on: ubuntu-latest
+    outputs:
+      PYINSTALLER_ONEFILE_CMD: "pyinstaller --onefile --add-data 'res:res' --hide-console hide-early --icon res/icon_256.ico --distpath onefile --optimize 2 --name albatr055"
+      PYINSTALLER_ONEDIR_CMD: "pyinstaller --onedir --add-data 'res:res' --hide-console hide-early --icon res/icon_256.ico --distpath onedir --optimize 2 --name albatr055"
+    steps:
+    - name: Echo
+      run: echo "Commands outputted."
+  
+  build:
+    name: Build
+    needs: command
+    env:
+      PYTHON_VERSION: "3.13.1"
+    strategy:
+      fail-fast: true
+      matrix:
+        include:
+          - name: GNU/Linux
+            os: ubuntu-latest
+            pyinstaller_onefile_cmd: "${{ needs.command.outputs.PYINSTALLER_ONEFILE_CMD }} src/main.py"
+            pyinstaller_onedir_cmd: "${{ needs.command.outputs.PYINSTALLER_ONEDIR_CMD }} src/main.py"
+            onefile_name: "albatr055-onefile-linux-x64"
+            onedir_name: "albatr055-onedir-linux-x64"
+          - name: macOS
+            os: macos-latest
+            pyinstaller_onefile_cmd: "${{ needs.command.outputs.PYINSTALLER_ONEFILE_CMD }} src/main.py"
+            pyinstaller_onedir_cmd: "${{ needs.command.outputs.PYINSTALLER_ONEDIR_CMD }} src/main.py"
+            onefile_name: "albatr055-onefile-macos-arm64"
+            onedir_name: "albatr055-onedir-macos-arm64"
+          - name: Windows
+            os: windows-latest
+            pyinstaller_onefile_cmd: "${{ needs.command.outputs.PYINSTALLER_ONEFILE_CMD }} src\\main.py"
+            pyinstaller_onedir_cmd: "${{ needs.command.outputs.PYINSTALLER_ONEDIR_CMD }} src\\main.py"
+            onefile_name: "albatr055-onefile-windows-x64"
+            onedir_name: "albatr055-onedir-windows-x64"
+    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "${{ env.PYTHON_VERSION }}"
+      - name: Install Build Deps
+        run: pip install pyinstaller pillow
+      - name: Build Executable
+        run: |
+          ${{ matrix.pyinstaller_onefile_cmd }}
+          ${{ matrix.pyinstaller_onedir_cmd }}
+      - name: Prepare Artifacts
+        # if: github.ref_type == 'tag'
+        run: |
+          mkdir ${{ matrix.onefile_name }}
+          mkdir ${{ matrix.onedir_name }}
+          cp -r onefile/* ${{ matrix.onefile_name }}
+          cp -r onedir/* ${{ matrix.onedir_name }}
+          cp README.md LICENSE CHANGELOG.md ${{ matrix.onefile_name }}
+          cp README.md LICENSE CHANGELOG.md ${{ matrix.onedir_name }}
+          ls ${{ matrix.onefile_name }}
+          ls ${{ matrix.onedir_name }}
+          
+      - name: Release Artifacts
+        uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        with:
+          generate_release_notes: true
+          draft: true
+          preserve_order: true
+          files: |
+            ${{ matrix.onefile_name }}
+            ${{ matrix.onedir_name }}
