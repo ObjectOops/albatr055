@@ -101,9 +101,12 @@ jobs:
         run: sudo apt-get install zip
       - name: Archive Artifacts
         run: |
-          for dir in dists/*/; do
-            echo "Archiving: " $dir*
-            zip -r "${dir%/}.zip" $dir*
+          cd dists
+          for dir in */; do
+            cd $dir
+            echo "Archiving:" *
+            zip -r ../"${dir%/}.zip" *
+            cd ..
           done
       - name: Release Artifacts
         uses: softprops/action-gh-release@v2
