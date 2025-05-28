@@ -12,8 +12,14 @@ jobs:
     name: Command
     runs-on: ubuntu-latest
     outputs:
-      PYINSTALLER_ONEFILE_CMD: "pyinstaller --onefile --add-data 'res:res' --hide-console hide-early --icon res/icon_256.ico --distpath onefile --optimize 2 --name albatr055"
-      PYINSTALLER_ONEDIR_CMD: "pyinstaller --onedir --add-data 'res:res' --hide-console hide-early --icon res/icon_256.ico --distpath onedir --optimize 2 --name albatr055"
+      PYINSTALLER_ONEFILE_BASE_CMD: "pyinstaller --onefile --add-data 'res:res' --hide-console hide-early --icon res/icon_256.ico --optimize 2 --name albatr055"
+      PYINSTALLER_ONEDIR_BASE_CMD: "pyinstaller --onedir --add-data 'res:res' --hide-console hide-early --icon res/icon_256.ico --optimize 2 --name albatr055"
+      LINUX_ONEFILE_NAME: albatr055-onefile-linux-x64
+      LINUX_ONEDIR_NAME: albatr055-onedir-linux-x64
+      MACOS_ONEFILE_NAME: albatr055-onefile-macos-arm64
+      MACOS_ONEDIR_NAME: albatr055-onedir-macos-arm64
+      WINDOWS_ONEFILE_NAME: albatr055-onefile-windows-x64
+      WINDOWS_ONEDIR_NAME: albatr055-onedir-windows-x64
     steps:
     - name: Echo
       run: echo "Commands outputted."
@@ -29,25 +35,23 @@ jobs:
         include:
           - name: GNU/Linux
             os: ubuntu-latest
-            pyinstaller_onefile_cmd: "${{ needs.command.outputs.PYINSTALLER_ONEFILE_CMD }} src/main.py"
-            pyinstaller_onedir_cmd: "${{ needs.command.outputs.PYINSTALLER_ONEDIR_CMD }} src/main.py"
-            onefile_name: "albatr055-onefile-linux-x64"
-            onedir_name: "albatr055-onedir-linux-x64"
+            pyinstaller_onefile_cmd: "${{ needs.command.outputs.PYINSTALLER_ONEFILE_BASE_CMD }} --distpath ${{ needs.command.outputs.LINUX_ONEFILE_NAME }} src/main.py"
+            pyinstaller_onedir_cmd: "${{ needs.command.outputs.PYINSTALLER_ONEDIR_BASE_CMD }} --distpath ${{ needs.command.outputs.LINUX_ONEDIR_NAME }} src/main.py"
+            onefile_name: ${{ needs.command.outputs.LINUX_ONEFILE_NAME }}
+            onedir_name: ${{ needs.command.outputs.LINUX_ONEDIR_NAME }}
           - name: macOS
             os: macos-latest
-            pyinstaller_onefile_cmd: "${{ needs.command.outputs.PYINSTALLER_ONEFILE_CMD }} src/main.py"
-            pyinstaller_onedir_cmd: "${{ needs.command.outputs.PYINSTALLER_ONEDIR_CMD }} src/main.py"
-            onefile_name: "albatr055-onefile-macos-arm64"
-            onedir_name: "albatr055-onedir-macos-arm64"
+            pyinstaller_onefile_cmd: "${{ needs.command.outputs.PYINSTALLER_ONEFILE_BASE_CMD }} --distpath ${{ needs.command.outputs.MACOS_ONEFILE_NAME }} src/main.py"
+            pyinstaller_onedir_cmd: "${{ needs.command.outputs.PYINSTALLER_ONEDIR_BASE_CMD }} --distpath ${{ needs.command.outputs.MACOS_ONEDIR_NAME }} src/main.py"
+            onefile_name: ${{ needs.command.outputs.MACOS_ONEFILE_NAME }}
+            onedir_name: ${{ needs.command.outputs.MACOS_ONEDIR_NAME }}
           - name: Windows
             os: windows-latest
-            pyinstaller_onefile_cmd: "${{ needs.command.outputs.PYINSTALLER_ONEFILE_CMD }} src\\main.py"
-            pyinstaller_onedir_cmd: "${{ needs.command.outputs.PYINSTALLER_ONEDIR_CMD }} src\\main.py"
-            onefile_name: "albatr055-onefile-windows-x64"
-            onedir_name: "albatr055-onedir-windows-x64"
+            pyinstaller_onefile_cmd: "${{ needs.command.outputs.PYINSTALLER_ONEFILE_BASE_CMD }} --distpath ${{ needs.command.outputs.WINDOWS_ONEFILE_NAME }} src\\main.py"
+            pyinstaller_onedir_cmd: "${{ needs.command.outputs.PYINSTALLER_ONEDIR_BASE_CMD }} --distpath ${{ needs.command.outputs.WINDOWS_ONEDIR_NAME }} src\\main.py"
+            onefile_name: ${{ needs.command.outputs.WINDOWS_ONEFILE_NAME }}
+            onedir_name: ${{ needs.command.outputs.WINDOWS_ONEDIR_NAME }}
     runs-on: ${{ matrix.os }}
-    permissions:
-      contents: write
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
@@ -59,18 +63,47 @@ jobs:
         run: |
           ${{ matrix.pyinstaller_onefile_cmd }}
           ${{ matrix.pyinstaller_onedir_cmd }}
-      - name: Prepare Artifacts
+      - name: Upload Build Artifacts
+        uses: actions/upload-artifact@v4
         # if: github.ref_type == 'tag'
+        with:
+          name: albatr055-${{ matrix.os }}-all
+          path: |
+            ${{ matrix.onefile_name }}
+            ${{ matrix.onedir_name }}
+          if-no-files-found: error
+          retention-days: 1
+  
+  release:
+    name: Release
+    # if: github.ref_type == 'tag'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download Build Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: dists
+          merge-multiple: true
+      - name: Output Structure 1
+        run: ls -R dists
+      - name: Prepare Artifacts
         run: |
-          mkdir ${{ matrix.onefile_name }}
-          mkdir ${{ matrix.onedir_name }}
-          cp -r onefile/* ${{ matrix.onefile_name }}
-          cp -r onedir/* ${{ matrix.onedir_name }}
-          cp README.md LICENSE CHANGELOG.md ${{ matrix.onefile_name }}
-          cp README.md LICENSE CHANGELOG.md ${{ matrix.onedir_name }}
-          ls ${{ matrix.onefile_name }}
-          ls ${{ matrix.onedir_name }}
-          
+          for dir in dists/*/; do
+            cp README.md LICENSE CHANGELOG.md $dir
+          done
+      - name: Output Structure 2
+        run: ls -R dists
+      - name: Install zip
+        run: sudo apt-get install zip
+      - name: Archive Artifacts
+        run: |
+          for dir in dists/*/; do
+            zip -r "${dir%/}.zip" "$dir"
+          done
       - name: Release Artifacts
         uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag'
@@ -78,6 +111,4 @@ jobs:
           generate_release_notes: true
           draft: true
           preserve_order: true
-          files: |
-            ${{ matrix.onefile_name }}
-            ${{ matrix.onedir_name }}
+          files: dists/*.zip
