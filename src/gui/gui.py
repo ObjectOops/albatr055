@@ -7,9 +7,10 @@ from gui import windows, theme
 from util import cli
 
 alive = False
+exit_event = None
 
 def start(immediate_actions=lambda: None, post_actions=lambda: None):
-    global alive
+    global alive, exit_event
     
     configure_platform()
     dpg.create_context()
@@ -35,11 +36,14 @@ def start(immediate_actions=lambda: None, post_actions=lambda: None):
     dpg.destroy_context()
     
     post_actions()
+    if exit_event is not None:
+        exit_event.set()
 
 def exit_background(event):
+    global exit_event
+    
+    exit_event = event
     dpg.stop_dearpygui()
-    dpg.destroy_context()
-    event.set()
 
 def add_exit_background(event):
     if event is None:
