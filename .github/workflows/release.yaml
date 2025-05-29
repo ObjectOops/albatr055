@@ -34,7 +34,7 @@ jobs:
       matrix:
         include:
           - name: GNU/Linux
-            os: ubuntu-20.04
+            os: ubuntu-latest
             pyinstaller_onefile_cmd: "${{ needs.command.outputs.PYINSTALLER_ONEFILE_BASE_CMD }} --distpath ${{ needs.command.outputs.LINUX_ONEFILE_NAME }} src/main.py"
             pyinstaller_onedir_cmd: "${{ needs.command.outputs.PYINSTALLER_ONEDIR_BASE_CMD }} --distpath ${{ needs.command.outputs.LINUX_ONEDIR_NAME }} src/main.py"
             onefile_name: ${{ needs.command.outputs.LINUX_ONEFILE_NAME }}
