@@ -10,7 +10,7 @@
 
 ___
 
-[Prebuilt releases available for Windows (10 or 11), macOS (arm64), and GNU/Linux (glibc >= 2.39).](https://github.com/ObjectOops/albatr055/releases)
+[Prebuilt releases available for Windows (10 or 11), macOS (arm64), and GNU/Linux (glibc 2.39).](https://github.com/ObjectOops/albatr055/releases)
 
 ## Features
 
@@ -95,3 +95,17 @@ MIT License, Copyright (c) 2025 Alex Yao
 
 > [!Note]
 > To configure the hotkey blacklist, add hotkeys manually to your configuration file (e.g. `albatr055.ini`). You can use the keystroke log to obtain identifiers for each key.
+
+## Contributing
+
+### Requirements
+
+- Python 3.13.1 (might work with earlier versions)
+- `requirements.txt`
+    - Dear PyGui
+    - pynput (> 1.7.7 if using Python 3.13)
+
+### Run
+
+1. `pip install -r requirements.txt`
+2. `python src/main.py` or `python src\main.py` (Windows)
