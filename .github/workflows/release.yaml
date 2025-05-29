@@ -16,8 +16,8 @@ jobs:
       PYINSTALLER_ONEDIR_BASE_CMD: "pyinstaller --onedir --add-data 'res:res' --hide-console hide-early --icon res/icon_256.ico --optimize 2 --name albatr055"
       LINUX_ONEFILE_NAME: albatr055-onefile-linux-x64
       LINUX_ONEDIR_NAME: albatr055-onedir-linux-x64
-      MACOS_ONEFILE_NAME: albatr055-onefile-macos-universal2
-      MACOS_ONEDIR_NAME: albatr055-onedir-macos-universal2
+      MACOS_ONEFILE_NAME: albatr055-onefile-macos-arm64
+      MACOS_ONEDIR_NAME: albatr055-onedir-macos-arm64
       WINDOWS_ONEFILE_NAME: albatr055-onefile-windows-x64
       WINDOWS_ONEDIR_NAME: albatr055-onedir-windows-x64
     steps:
@@ -41,8 +41,8 @@ jobs:
             onedir_name: ${{ needs.command.outputs.LINUX_ONEDIR_NAME }}
           - name: macOS
             os: macos-latest
-            pyinstaller_onefile_cmd: "${{ needs.command.outputs.PYINSTALLER_ONEFILE_BASE_CMD }} --distpath ${{ needs.command.outputs.MACOS_ONEFILE_NAME }} --target-arch universal2 src/main.py"
-            pyinstaller_onedir_cmd: "${{ needs.command.outputs.PYINSTALLER_ONEDIR_BASE_CMD }} --distpath ${{ needs.command.outputs.MACOS_ONEDIR_NAME }} --target-arch universal2 src/main.py"
+            pyinstaller_onefile_cmd: "${{ needs.command.outputs.PYINSTALLER_ONEFILE_BASE_CMD }} --distpath ${{ needs.command.outputs.MACOS_ONEFILE_NAME }} src/main.py"
+            pyinstaller_onedir_cmd: "${{ needs.command.outputs.PYINSTALLER_ONEDIR_BASE_CMD }} --distpath ${{ needs.command.outputs.MACOS_ONEDIR_NAME }} src/main.py"
             onefile_name: ${{ needs.command.outputs.MACOS_ONEFILE_NAME }}
             onedir_name: ${{ needs.command.outputs.MACOS_ONEDIR_NAME }}
           - name: Windows
