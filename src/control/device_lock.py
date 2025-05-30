@@ -12,8 +12,10 @@ auto_unlock_timer_on = False
 
 def start_auto_unlock_timer_if_enabled():
     global auto_unlock_timer_on
-
-    if config.instance.auto_unlock_enabled:
+    
+    # Catch rare edge case where multiple timers can be started 
+    # if a BadUSB is detected after a manual lock was activated.
+    if config.instance.auto_unlock_enabled and not auto_unlock_timer_on:
         auto_unlock_timer_on = True
         auto_unlock_timer_thread = threading.Thread(target=auto_unlock_timer, daemon=True)
         auto_unlock_timer_thread.start()
