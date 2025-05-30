@@ -89,8 +89,7 @@ def immediate_lock():
     elif args.lock == "mouse":
         device_lock.lock_mouse()
     elif args.lock == "all":
-        device_lock.lock_keyboard()
-        device_lock.lock_mouse()
+        device_lock.lock_all()
 
 def set_passphrase():
     if args.passphrase is None:

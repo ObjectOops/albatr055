@@ -38,6 +38,10 @@ def auto_unlock_timer():
             unlock_all()
             break
 
+def lock_all():
+    lock_keyboard()
+    lock_mouse()
+
 def unlock_all():
     stop_auto_unlock_timer()
     

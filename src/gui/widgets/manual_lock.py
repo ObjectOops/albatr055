@@ -10,6 +10,7 @@ def widget():
         with dpg.group(horizontal=True):
             dpg.add_button(label="Lock Keyboard", callback=device_lock.lock_keyboard)
             dpg.add_button(label="Lock Mouse", callback=device_lock.lock_mouse)
+            dpg.add_button(label="Lock All", callback=device_lock.lock_all)
         with dpg.collapsing_header(label="More"):
             dpg.add_button(label="Set Unlock Passphrase", callback=set_passphrase_window)
             with dpg.group(horizontal=True):

@@ -1,6 +1,7 @@
 # Changelog
 
 ### New Features 🎉
+- Lock all button in GUI.
 
 ### Bug fixes 🐛
 - Fix issue where keystrokes and mouse movements could make it past locks while a passphrase attempt was being processed.
