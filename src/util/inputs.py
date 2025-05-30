@@ -31,7 +31,6 @@ keyboard_listener = keyboard.Listener(
     on_release=keyboard_on_release,
     suppress=False
 )
-keyboard_listener.start()
 
 def set_kb_suppression(suppress):
     global keyboard_listener
@@ -57,8 +56,6 @@ def key_up_consumer():
 
 key_down_consumer_thread = threading.Thread(target=key_down_consumer, daemon=True)
 key_up_consumer_thread = threading.Thread(target=key_up_consumer, daemon=True)
-key_down_consumer_thread.start()
-key_up_consumer_thread.start()
 
 hotkey_listener = None
 
@@ -93,7 +90,6 @@ def mouse_on_click(_):
 mouse_listener = mouse.Listener(
     on_click=mouse_on_click
 )
-mouse_listener.start()
 
 def set_mouse_suppression(suppress):
     global mouse_listener
@@ -108,4 +104,16 @@ def mouse_consumer():
         mouse_event_queue.task_done()
 
 mouse_consumer_thread = threading.Thread(target=mouse_consumer, daemon=True)
-mouse_consumer_thread.start()
+
+def start_workers():
+    global keyboard_listener, mouse_listener
+    global key_down_consumer_thread, key_up_consumer_thread, mouse_consumer_thread
+    
+    keyboard_listener.start()
+    key_down_consumer_thread.start()
+    key_up_consumer_thread.start()
+    mouse_listener.start()
+    mouse_consumer_thread.start()
+    
+    keyboard_listener.wait()
+    mouse_listener.wait()

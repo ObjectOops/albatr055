@@ -1,11 +1,13 @@
 import threading, subprocess, sys, os
 
-from util import cli, resource
+from util import cli, resource, inputs
 from config import config
 from control import detection
 from gui import gui
 
 def main():
+    inputs.start_workers()
+    
     cli.init_cli()
     if cli.args.background and not cli.args.relaunched:
         relaunch_in_background()
