@@ -11,6 +11,10 @@
 ___
 
 [Prebuilt releases available for Windows (10 or 11), macOS (arm64), and GNU/Linux (glibc 2.39).](https://github.com/ObjectOops/albatr055/releases)
+> Recommended to use `onedir` over `onefile` bundles.
+
+> [!Note]
+> Additional permissions are required for Linux and macOS. See the [pynput docs](https://pynput.readthedocs.io/en/latest/limitations.html) for details.
 
 ## Features
 
@@ -18,7 +22,7 @@ ___
 - GUI and CLI
 - Launch as background process
 - Persistent configuration
-- Manually lock keyboard / mouse
+- Manually lock keyboard and/or mouse
 - Optional unlock passphrase
 - Automatic unlock after specified duration
 - Toggleable detection
@@ -26,6 +30,9 @@ ___
 - Configurable detection settings
 - Hotkey detection
 - Logging
+
+### Limitations
+- Mouse lock does not prevent actions from being executed via touchscreen and *possibly* other HID devices.
 
 > [!Important]
 > **Disclaimer**: This software has not *yet* been tested against an actual BadUSB. It listens for all keystrokes sent to the system and responds if the rate of keystrokes received exceeds the configured keys-per-second threshold.
@@ -36,7 +43,7 @@ ___
 
 | Dashboard | Keyboard Locked | Mouse Locked |
 | :---: | :---: | :---: |
-| <img width="320" alt="image" src="https://github.com/user-attachments/assets/711b1e17-b085-44d2-8f2a-964b5bd6f30e" /> | <img width="320" alt="image" src="https://github.com/user-attachments/assets/09bf7711-3a7a-4f80-acdf-30b704d316d9" /> | <img width="320" alt="image" src="https://github.com/user-attachments/assets/0af17ed4-e106-430b-bab2-94bf3ad8d9e5" /> |
+| <img width="320" alt="Dashboard" src="https://github.com/user-attachments/assets/37e9769c-5250-4963-9d08-12dd20881f85" /> | <img width="320" alt="Keyboard Locked" src="https://github.com/user-attachments/assets/46b60612-fcaf-4cc7-89ed-ec7abb379c2e" /> | <img width="320" alt="Mouse Locked" src="https://github.com/user-attachments/assets/0af17ed4-e106-430b-bab2-94bf3ad8d9e5" /> |
 
 ### CLI
 
