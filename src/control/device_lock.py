@@ -3,7 +3,7 @@ import threading, time, math
 import dearpygui.dearpygui as dpg
 from pynput import keyboard, mouse
 
-from control import logging, detection
+from control import logging, detection, device_lock
 from config import config, constants
 from util import inputs, duration, passphrase_utils
 from gui.widgets import manual_lock
@@ -94,6 +94,8 @@ def unlock_keyboard():
 def lock_mouse():
     global mouse_lock_active
     
+    inputs.set_mouse_suppression(True)
+    inputs.set_mouse_on_click(device_lock.passphrase_challenge)
     logging.log_generic("Locked Mouse")
     
     manual_lock.passphrase_prompt()
@@ -111,6 +113,10 @@ def lock_mouse():
     if dpg.does_item_exist("passphrase_input"):
         dpg.focus_item("passphrase_input")
     
+    # `mouse_lock_target` must run in a separate thread or it can't determine 
+    # the correct position of the submit button.
+    # This isn't significant, since the submit button itself is not providing the call 
+    # to `device_lock.passphrase_challenge` anymore, but it's nicer from a UI perspective.
     mouse_lock_active = True
     mouse_lock_thread = threading.Thread(
         target=mouse_lock_target, args=(original_pos, original_width, original_height), daemon=True
@@ -120,6 +126,8 @@ def lock_mouse():
 def unlock_mouse():
     global mouse_lock_active
     
+    inputs.set_mouse_suppression(False)
+    inputs.set_mouse_on_click(None)
     logging.log_generic("Unlocked Mouse")
     
     manual_lock.close_passphrase_prompt()
@@ -130,6 +138,8 @@ def unlock_mouse():
     
     mouse_lock_active = False
 
+# This isn't actually needed, but the newer mouse suppression implementation 
+# is finicky, so we can keep it around just in case.
 mouse_lock_active = False
 
 # Only reads, so probably fine if not thread-safe.
@@ -161,11 +171,12 @@ def mouse_lock_target(original_pos, original_width, original_height):
     )
     
     m = mouse.Controller()
-    while mouse_lock_active:
-        if m.position[0] == pos[0] and m.position[1] == pos[1]:
-            time.sleep(0)
-            continue
-        m.position = pos
+    # while mouse_lock_active:
+    #     if m.position[0] == pos[0] and m.position[1] == pos[1]:
+    #         time.sleep(0)
+    #     else:
+    #         m.position = pos
+    m.position = pos
 
 def set_passphrase():
     passphrase_1 = dpg.get_value("passphrase_input_1")

@@ -1,22 +1,22 @@
-from pynput import keyboard
+import threading, queue
+
+from pynput import keyboard, mouse
 
 from control import logging
 from config import config
 
 kb_on_press_callback = None
 kb_on_release_callback = None
+key_down_queue = queue.Queue()
+key_up_queue = queue.Queue()
 
 def keyboard_on_press(key):
-    global kb_on_press_callback
-    logging.log_key_down(key)
-    if kb_on_press_callback is not None:
-        kb_on_press_callback(key)
+    global key_down_queue
+    key_down_queue.put(key)
 
 def keyboard_on_release(key):
-    global kb_on_release_callback
-    logging.log_key_up(key)
-    if kb_on_release_callback is not None:
-        kb_on_release_callback(key)
+    global key_up_queue
+    key_up_queue.put(key)
 
 def set_kb_on_press(callback):
     global kb_on_press_callback
@@ -37,6 +37,29 @@ def set_kb_suppression(suppress):
     global keyboard_listener
     keyboard_listener._suppress = suppress # Purposefully ignore "private" member.
 
+def key_down_consumer():
+    global key_down_queue, kb_on_press_callback
+    while True:
+        key = key_down_queue.get()
+        logging.log_key_down(key)
+        if kb_on_press_callback is not None:
+            kb_on_press_callback(key)
+        key_down_queue.task_done()
+
+def key_up_consumer():
+    global key_up_queue, kb_on_release_callback
+    while True:
+        key = key_up_queue.get()
+        logging.log_key_up(key)
+        if kb_on_release_callback is not None:
+            kb_on_release_callback(key)
+        key_up_queue.task_done()
+
+key_down_consumer_thread = threading.Thread(target=key_down_consumer, daemon=True)
+key_up_consumer_thread = threading.Thread(target=key_up_consumer, daemon=True)
+key_down_consumer_thread.start()
+key_up_consumer_thread.start()
+
 hotkey_listener = None
 
 def enable_hotkey_listening(callback):
@@ -54,3 +77,35 @@ def disable_hotkey_listening():
     if hotkey_listener is not None:
         hotkey_listener.stop()
     hotkey_listener = None
+
+mouse_on_click_callback = None
+mouse_event_queue = queue.Queue()
+
+def set_mouse_on_click(callback):
+    global mouse_on_click_callback
+    mouse_on_click_callback = callback
+
+def mouse_on_click(_):
+    # The specific mouse event data does not matter.
+    global mouse_event_queue
+    mouse_event_queue.put(True)
+
+mouse_listener = mouse.Listener(
+    on_click=mouse_on_click
+)
+mouse_listener.start()
+
+def set_mouse_suppression(suppress):
+    global mouse_listener
+    mouse_listener._suppress = suppress # Purposefully ignore "private" member.
+
+def mouse_consumer():
+    global mouse_event_queue, mouse_on_click_callback
+    while True:
+        mouse_event_queue.get()
+        if mouse_on_click_callback is not None:
+            mouse_on_click_callback()
+        mouse_event_queue.task_done()
+
+mouse_consumer_thread = threading.Thread(target=mouse_consumer, daemon=True)
+mouse_consumer_thread.start()
