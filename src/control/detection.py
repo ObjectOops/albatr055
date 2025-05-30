@@ -22,6 +22,9 @@ def change_kps(_, value):
     config.save()
 
 def change_sample_size(_, value):
+    global keystroke_watch
+    keystroke_watch.clear()
+    
     config.instance.sample_size = value
     config.save()
 
@@ -37,8 +40,9 @@ def toggle_log_on_detection(_, toggle):
     config.instance.log_on_detection = toggle
     config.save()
 
+keystroke_watch = []
 def start_detection(event=None):
-    keystroke_watch = []
+    global keystroke_watch
     
     def on_press(key):
         count = len(keystroke_watch)
@@ -46,9 +50,10 @@ def start_detection(event=None):
             current_time = time.time_ns()
             keystroke_watch.append((key, current_time))
             count += 1
-        if count > config.instance.sample_size:
-            keystroke_watch.pop(0)
-            delta = keystroke_watch[-1][1] - keystroke_watch[0][1]
+        if count >= config.instance.sample_size:
+            first = keystroke_watch.pop(0)[1]
+            last = keystroke_watch[-1][1]
+            delta = last - first
             if delta == 0:
                 badusb_detected(f"KPS: div. zero error", event)
                 return
