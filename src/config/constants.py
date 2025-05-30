@@ -2,7 +2,7 @@ import platform
 
 from util import resource
 
-VERSION = "1.0.0"
+VERSION = "1.1.0"
 
 SMALL_ICON = resource.get_resource("res/icon_256.ico")
 FONT = resource.get_resource("res/cour.ttf")
