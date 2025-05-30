@@ -8,6 +8,9 @@ def is_valid_passphrase(passphrase):
     )
 
 def hash_scrypt(passphrase):
+    if passphrase is None:
+        passphrase = ""
+    
     n = 2 ** 17
     r = 8
     p = 1
