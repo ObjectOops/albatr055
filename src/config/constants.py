@@ -47,7 +47,7 @@ INIT_DEFAULTS = {
         Keys.viewport.POS: [630, 220]
     },
     Keys.detection.NAME: {
-        Keys.detection.ACTIVE: False,
+        Keys.detection.ACTIVE: True,
         Keys.detection.LOCK_MOUSE_ON_DETECTION: True,
         Keys.detection.KEYS_PER_SECOND: 15.0,
         Keys.detection.SAMPLE_SIZE: 6,
@@ -62,7 +62,7 @@ INIT_DEFAULTS = {
         Keys.passphrase.HASH: "",
         Keys.passphrase.ENABLE: False,
         Keys.passphrase.AUTO_UNLOCK_DURATION: 60 * 10,
-        Keys.passphrase.AUTO_UNLOCK_ENABLE: False
+        Keys.passphrase.AUTO_UNLOCK_ENABLE: True
     },
     Keys.suspect_hotkeys.NAME: {
         Keys.suspect_hotkeys.BLACKLIST: [

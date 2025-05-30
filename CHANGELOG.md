@@ -1,5 +1,8 @@
 # Changelog
 
+### Breaking Changes 🛠
+- Update default settings.
+
 ### New Features 🎉
 - Lock all button in GUI.
 
