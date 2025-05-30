@@ -54,6 +54,25 @@ def add_exit_background(event):
         label="Exit Background", parent="primary_window", callback=lambda: exit_background(event)
     )
 
+def save_error():
+    if alive:
+        with dpg.window(label="Error"):
+            dpg.add_text("Could not save to disk.")
+    else:
+        dpg.destroy_context() # Destroy existing context.
+        dpg.create_context()
+        
+        theme.set_global_theme()
+        windows.create_viewport()
+        
+        with dpg.window() as window:
+            dpg.set_primary_window(window, True)
+            dpg.add_text("Error: Could not save to disk.")
+        
+        dpg.setup_dearpygui()
+        dpg.show_viewport()
+        dpg.start_dearpygui() # Will be destroyed by call usually intended for former context.
+
 def configure_platform():
     if constants.PLATFORM_NAME == "Windows":
         PROCESS_PER_MONITOR_DPI_AWARE = 2

@@ -4,6 +4,7 @@ import dearpygui.dearpygui as dpg
 
 from config.constants import INIT_DEFAULTS, Keys
 from util import cli
+from gui import gui
 
 def load():
     global instance
@@ -43,8 +44,12 @@ def save():
         Keys.passphrase.AUTO_UNLOCK_DURATION: instance.auto_unlock_duration,
         Keys.passphrase.AUTO_UNLOCK_ENABLE: instance.auto_unlock_enabled
     }
-    with open(cli.args.config_file, "w") as config_file:
-        config_writer.write(config_file)
+    
+    try:
+        with open(cli.args.config_file, "w") as config_file:
+            config_writer.write(config_file)
+    except:
+        gui.save_error()
 
 class Config:
     def __init__(self, config_parser):

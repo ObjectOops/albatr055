@@ -3,6 +3,7 @@ import time, pathlib
 from config import config, constants
 from gui.widgets import key_log
 from control import logging
+from gui import gui
 
 keystroke_log = []
 
@@ -42,6 +43,9 @@ def log_enabled():
 def export_log(_, path_data):
     current_time = int(time.time())
     path = pathlib.Path(path_data["file_path_name"]) / f"{constants.APP_TITLE.lower()}_{current_time}.log"
-    with open(path, "w") as writer:
-        for keystroke in logging.keystroke_log:
-            writer.write(f"{keystroke}\n")
+    try:
+        with open(path, "w") as writer:
+            for keystroke in logging.keystroke_log:
+                writer.write(f"{keystroke}\n")
+    except:
+        gui.save_error()
